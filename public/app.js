@@ -80,7 +80,7 @@ function updateEstimate(card) {
   const natH = parseInt(card.dataset.natH, 10) || 0;
   const ext  = card.dataset.ext || '.jpg';
 
-  const settings = getSettings();
+  const settings = getCardSettings(card);
   const estimated = estimateOutputSize(originalSize, ext, natW, natH, settings);
   const pct = (originalSize - estimated) / originalSize * 100;
   const sign = pct >= 0 ? '-' : '+';
@@ -118,6 +118,17 @@ function getSettings() {
   const outputFormat = document.querySelector('.format-btn.active').dataset.format;
   const prefix = toKebabCase(document.getElementById('prefix-input').value);
   return { quality, maxWidth, maxHeight, outputFormat, prefix };
+}
+
+function getCardSettings(card) {
+  const global = getSettings();
+  const cardW = parseInt(card.querySelector('.card-w-input').value, 10) || null;
+  const cardH = parseInt(card.querySelector('.card-h-input').value, 10) || null;
+  return {
+    ...global,
+    maxWidth:  cardW  !== null ? cardW  : global.maxWidth,
+    maxHeight: cardH !== null ? cardH : global.maxHeight,
+  };
 }
 
 // Quality slider — update fill track + label
@@ -174,6 +185,7 @@ settingsToggle.addEventListener('click', () => {
   settingsBody.classList.toggle('open', opening);
   chevron.classList.toggle('rotated', opening);
   settingsToggle.setAttribute('aria-expanded', opening);
+  if (opening) document.getElementById('settings-panel').classList.remove('hint');
 });
 
 // ── Progress bar ──────────────────────────────────────────────────────────────
@@ -285,6 +297,13 @@ function buildCard(file, localUrl) {
         <span class="upload-status">Uploading…</span>
       </div>
       <div class="size-estimate hidden"></div>
+      <div class="card-resize-row">
+        <span class="resize-label">Resize:</span>
+        <input type="number" class="card-w-input num-input-sm" placeholder="W" min="1" max="99999">
+        <span class="size-sep">×</span>
+        <input type="number" class="card-h-input num-input-sm" placeholder="H" min="1" max="99999">
+        <span class="size-unit">px</span>
+      </div>
       <div class="progress-wrap hidden">
         <div class="progress-bar"></div>
       </div>
@@ -331,6 +350,16 @@ function buildCard(file, localUrl) {
       li.dataset.baseName = kebab;
     }
   });
+
+  // Per-card resize inputs — update estimate on change, disable drag on focus
+  const cardWInput = li.querySelector('.card-w-input');
+  const cardHInput = li.querySelector('.card-h-input');
+  cardWInput.addEventListener('input', () => updateEstimate(li));
+  cardHInput.addEventListener('input', () => updateEstimate(li));
+  cardWInput.addEventListener('focus', () => li.setAttribute('draggable', 'false'));
+  cardWInput.addEventListener('blur',  () => li.setAttribute('draggable', 'true'));
+  cardHInput.addEventListener('focus', () => li.setAttribute('draggable', 'false'));
+  cardHInput.addEventListener('blur',  () => li.setAttribute('draggable', 'true'));
 
   initDragReorder(li);
   return li;
@@ -381,7 +410,7 @@ async function optimizeCard(card) {
   const resultEl     = card.querySelector('.card-result');
   const downloadBtn  = card.querySelector('.btn-download');
 
-  const { quality, maxWidth, maxHeight, outputFormat } = getSettings();
+  const { quality, maxWidth, maxHeight, outputFormat } = getCardSettings(card);
   const newName = toKebabCase(nameInput.value) ||
     toKebabCase(card.dataset.originalName || 'image');
   nameInput.value = newName;
@@ -389,6 +418,8 @@ async function optimizeCard(card) {
   // Lock UI
   optimizeBtn.disabled = true;
   nameInput.disabled = true;
+  card.querySelector('.card-w-input').disabled = true;
+  card.querySelector('.card-h-input').disabled = true;
   statusEl.textContent = '';
   card.classList.remove('error');
   resultEl.classList.add('hidden');
@@ -441,6 +472,7 @@ async function optimizeCard(card) {
     downloadBtn.classList.remove('hidden');
 
     card.classList.add('done');
+    card.querySelector('.card-resize-row').classList.add('hidden');
 
     totalProcessed++;
     totalSavedBytes += data.savedBytes;
@@ -454,6 +486,8 @@ async function optimizeCard(card) {
     resultEl.classList.remove('hidden');
     optimizeBtn.disabled = false;
     nameInput.disabled = false;
+    card.querySelector('.card-w-input').disabled = false;
+    card.querySelector('.card-h-input').disabled = false;
     card.classList.add('error');
   }
 }
@@ -537,6 +571,11 @@ function addFiles(files) {
     uploadFile(file, card);
     refreshToolbar();
   });
+
+  // Hint the settings bar if it hasn't been opened yet
+  if (settingsToggle.getAttribute('aria-expanded') === 'false') {
+    document.getElementById('settings-panel').classList.add('hint');
+  }
 }
 
 // ── Drop zone ─────────────────────────────────────────────────────────────────

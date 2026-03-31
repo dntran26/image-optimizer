@@ -113,11 +113,21 @@ main {
 .browse-link:hover { text-decoration: underline; }
 
 /* ── Settings panel ──────────────────────────────────────────────────────────── */
+@keyframes settings-hint-pulse {
+  0%, 100% { border-color: var(--border); box-shadow: none; }
+  50%       { border-color: rgba(79, 142, 255, 0.5); box-shadow: 0 0 0 3px rgba(79, 142, 255, 0.08); }
+}
+
 #settings-panel {
   margin-top: 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+#settings-panel.hint {
+  animation: settings-hint-pulse 2s ease-in-out infinite;
 }
 
 #settings-toggle {
@@ -126,10 +136,10 @@ main {
   align-items: center;
   justify-content: space-between;
   padding: 11px 16px;
-  background: var(--surface);
+  background: var(--surface-2);
   border: none;
   cursor: pointer;
-  color: var(--text-muted);
+  color: var(--text-dim);
   font-size: 13px;
   font-weight: 500;
   gap: 8px;
@@ -138,11 +148,12 @@ main {
 
 #settings-toggle:hover {
   color: var(--text);
-  background: var(--surface-2);
+  background: #28282d;
 }
 
 #settings-toggle[aria-expanded="true"] {
   color: var(--text);
+  background: #28282d;
 }
 
 .toggle-left {
@@ -504,6 +515,40 @@ input[type="range"]::-webkit-slider-thumb {
 .est-great { color: var(--green); }
 .est-ok    { color: #e6a817; }
 .est-grew  { color: var(--red); }
+
+/* Per-card resize override */
+.card-resize-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.resize-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 38px;
+}
+
+.num-input-sm {
+  width: 64px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 12px;
+  padding: 3px 6px;
+  outline: none;
+  transition: border-color 0.15s;
+  -moz-appearance: textfield;
+}
+
+.num-input-sm::-webkit-inner-spin-button,
+.num-input-sm::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+.num-input-sm:focus { border-color: var(--accent); }
+.num-input-sm::placeholder { color: var(--text-muted); }
+.num-input-sm:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* Progress bar */
 .progress-wrap {
