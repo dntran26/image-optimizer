@@ -1,0 +1,21 @@
+node_modules/
+
+# Temp uploads (web UI clears these, but don't commit leftovers)
+uploads/*
+!uploads/.gitkeep
+
+# Local processed/optimized images — these are personal workflow files
+images/inbox/*
+!images/inbox/.gitkeep
+images/inbox/processed/*
+!images/inbox/processed/.gitkeep
+images/optimized/*
+!images/optimized/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local

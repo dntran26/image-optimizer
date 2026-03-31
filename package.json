@@ -1,0 +1,17 @@
+{
+  "name": "image-optimizer",
+  "version": "1.0.0",
+  "description": "Image optimization factory for JPG and PNG files",
+  "scripts": {
+    "watch": "node watch.js",
+    "process": "node process.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "chokidar": "^3.6.0",
+    "express": "^4.19.2",
+    "multer": "^2.1.1",
+    "sharp": "^0.33.5"
+  }
+}

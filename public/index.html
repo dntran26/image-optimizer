@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Optimizer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>Image Optimizer</h1>
+      <div class="stats">
+        <span class="stat">
+          <span class="stat-value" id="stat-count">0</span>
+          <span class="stat-label">processed</span>
+        </span>
+        <span class="stat-divider">·</span>
+        <span class="stat">
+          <span class="stat-value" id="stat-saved">0 B</span>
+          <span class="stat-label">saved</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="drop-zone">
+      <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png" hidden>
+      <div class="drop-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <p class="drop-primary">Drop images here</p>
+      <p class="drop-secondary">or <label for="file-input" class="browse-link">browse files</label> &nbsp;·&nbsp; JPG &amp; PNG</p>
+    </div>
+
+    <!-- Settings panel (collapsed by default) -->
+    <div id="settings-panel">
+      <button id="settings-toggle" aria-expanded="false">
+        <span class="toggle-left">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+            <path d="M12 2v2m0 16v2M2 12h2m16 0h2"/>
+          </svg>
+          Settings
+        </span>
+        <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      <div id="settings-body">
+        <div class="settings-grid">
+
+          <div class="setting-row">
+            <label for="quality-input">Quality</label>
+            <div class="quality-row">
+              <input type="range" id="quality-input" min="1" max="100" value="80">
+              <span id="quality-value" class="quality-value">80</span>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <label>Max size</label>
+            <div class="size-row">
+              <input type="number" id="max-width" class="num-input" placeholder="Width" min="1" max="99999">
+              <span class="size-sep">×</span>
+              <input type="number" id="max-height" class="num-input" placeholder="Height" min="1" max="99999">
+              <span class="size-unit">px</span>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <label>Format</label>
+            <div class="format-selector" id="format-selector">
+              <button class="format-btn active" data-format="auto">Auto</button>
+              <button class="format-btn" data-format="jpg">JPG</button>
+              <button class="format-btn" data-format="png">PNG</button>
+              <button class="format-btn" data-format="webp">WebP</button>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <label for="prefix-input">Prefix</label>
+            <input type="text" id="prefix-input" class="prefix-input" placeholder="e.g. hero  →  hero-1, hero-2 …" spellcheck="false">
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar (shown once images are queued) -->
+    <div id="toolbar" class="hidden">
+      <button id="btn-optimize-all" class="btn-toolbar-primary">Optimize All</button>
+      <button id="btn-download-zip" class="btn-toolbar-secondary hidden">Download All as ZIP</button>
+    </div>
+
+    <ul id="image-list"></ul>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
