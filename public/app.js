@@ -162,10 +162,11 @@ document.getElementById('max-height').addEventListener('input', updateAllEstimat
 // If prefix is empty, reverts each card to its stored baseName.
 function applyPrefix() {
   const prefix = toKebabCase(document.getElementById('prefix-input').value);
+  const startNum = Math.max(1, parseInt(document.getElementById('start-number-input').value, 10) || 1);
   const cards = Array.from(
     document.querySelectorAll('#image-list .image-card:not(.done)')
   );
-  let n = 1;
+  let n = startNum;
   cards.forEach(card => {
     const inp = card.querySelector('.name-input');
     if (!inp || inp.disabled) return; // skip cards mid-optimization
@@ -174,6 +175,7 @@ function applyPrefix() {
 }
 
 document.getElementById('prefix-input').addEventListener('input', applyPrefix);
+document.getElementById('start-number-input').addEventListener('input', applyPrefix);
 
 // Settings panel collapse
 const settingsToggle = document.getElementById('settings-toggle');

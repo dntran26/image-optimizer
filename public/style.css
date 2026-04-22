@@ -302,8 +302,15 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 /* Prefix input */
+.prefix-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .prefix-input {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -317,6 +324,16 @@ input[type="range"]::-webkit-slider-thumb {
 
 .prefix-input:focus { border-color: var(--accent); }
 .prefix-input::placeholder { color: var(--text-muted); font-family: inherit; }
+
+.start-num-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.start-num-input {
+  width: 56px;
+}
 
 /* ── Toolbar ─────────────────────────────────────────────────────────────────── */
 #toolbar {

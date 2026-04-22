@@ -85,7 +85,11 @@
 
           <div class="setting-row">
             <label for="prefix-input">Prefix</label>
-            <input type="text" id="prefix-input" class="prefix-input" placeholder="e.g. hero  →  hero-1, hero-2 …" spellcheck="false">
+            <div class="prefix-row">
+              <input type="text" id="prefix-input" class="prefix-input" placeholder="e.g. hero  →  hero-1, hero-2 …" spellcheck="false">
+              <label for="start-number-input" class="start-num-label">Starting #</label>
+              <input type="number" id="start-number-input" class="num-input start-num-input" value="1" min="1">
+            </div>
           </div>
 
         </div>
