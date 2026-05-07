@@ -9,7 +9,7 @@ const sharp = require('sharp');
 const { processImage, SUPPORTED_EXTS } = require('./lib/processor');
 
 const app = express();
-const PORT = 3001;
+const PORT = 8080;
 
 const UPLOADS_DIR = path.resolve('./uploads');
 const OPTIMIZED_DIR = path.resolve('./images/optimized');
