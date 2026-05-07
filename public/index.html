@@ -26,7 +26,7 @@
 
   <main>
     <div id="drop-zone">
-      <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png" hidden>
+      <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.heic,.heif" hidden>
       <div class="drop-icon">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -35,24 +35,19 @@
         </svg>
       </div>
       <p class="drop-primary">Drop images here</p>
-      <p class="drop-secondary">or <label for="file-input" class="browse-link">browse files</label> &nbsp;·&nbsp; JPG &amp; PNG</p>
+      <p class="drop-secondary">or <label for="file-input" class="browse-link">browse files</label> &nbsp;·&nbsp; JPG, PNG &amp; HEIC</p>
     </div>
 
-    <!-- Settings panel (collapsed by default) -->
+    <!-- Settings panel -->
     <div id="settings-panel">
-      <button id="settings-toggle" aria-expanded="false">
-        <span class="toggle-left">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-            <path d="M12 2v2m0 16v2M2 12h2m16 0h2"/>
-          </svg>
-          Global settings
-        </span>
-        <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 12 15 18 9"/>
+      <div id="settings-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+          <path d="M12 2v2m0 16v2M2 12h2m16 0h2"/>
         </svg>
-      </button>
-      <div id="settings-body">
+        Global settings
+      </div>
+      <div id="settings-body" class="open">
         <div class="settings-grid">
 
           <div class="setting-row">

@@ -113,71 +113,22 @@ main {
 .browse-link:hover { text-decoration: underline; }
 
 /* ── Settings panel ──────────────────────────────────────────────────────────── */
-@keyframes settings-hint-pulse {
-  0%, 100% { border-color: var(--border); box-shadow: none; }
-  50%       { border-color: rgba(79, 142, 255, 0.5); box-shadow: 0 0 0 3px rgba(79, 142, 255, 0.08); }
-}
-
 #settings-panel {
   margin-top: 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-  transition: border-color 0.15s;
 }
 
-#settings-panel.hint {
-  animation: settings-hint-pulse 2s ease-in-out infinite;
-}
-
-#settings-toggle {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 11px 16px;
-  background: var(--surface-2);
-  border: none;
-  cursor: pointer;
-  color: var(--text-dim);
-  font-size: 13px;
-  font-weight: 500;
-  gap: 8px;
-  transition: color 0.15s, background 0.15s;
-}
-
-#settings-toggle:hover {
-  color: var(--text);
-  background: #28282d;
-}
-
-#settings-toggle[aria-expanded="true"] {
-  color: var(--text);
-  background: #28282d;
-}
-
-.toggle-left {
+#settings-header {
   display: flex;
   align-items: center;
   gap: 7px;
-}
-
-.chevron {
-  transition: transform 0.2s ease;
-  flex-shrink: 0;
-  color: var(--text-muted);
-}
-
-.chevron.rotated { transform: rotate(180deg); }
-
-#settings-body {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-#settings-body.open {
-  max-height: 360px;
+  padding: 11px 16px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .settings-grid {

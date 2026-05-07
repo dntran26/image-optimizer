@@ -6,7 +6,10 @@ const archiver = require('archiver');
 const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
+const heicConvert = require('heic-convert');
 const { processImage, SUPPORTED_EXTS } = require('./lib/processor');
+
+const HEIC_EXTS = new Set(['.heic', '.heif']);
 
 const app = express();
 const PORT = 8080;
@@ -39,6 +42,21 @@ app.use('/optimized', express.static(OPTIMIZED_DIR));
 // Upload a file — saves to uploads/, returns tempPath + metadata + dimensions
 app.post('/upload', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No valid image uploaded' });
+
+  // Convert HEIC/HEIF to JPG before passing through the pipeline
+  const uploadedExt = path.extname(req.file.path).toLowerCase();
+  if (HEIC_EXTS.has(uploadedExt)) {
+    try {
+      const inputBuffer = await fs.promises.readFile(req.file.path);
+      const outputBuffer = await heicConvert({ buffer: inputBuffer, format: 'JPEG', quality: 1 });
+      const jpgPath = req.file.path.replace(/\.[^.]+$/, '.jpg');
+      await fs.promises.writeFile(jpgPath, Buffer.from(outputBuffer));
+      await fs.promises.unlink(req.file.path);
+      req.file.path = jpgPath;
+    } catch (err) {
+      return res.status(422).json({ error: `HEIC conversion failed: ${err.message}` });
+    }
+  }
 
   let width = null, height = null;
   try {

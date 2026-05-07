@@ -177,19 +177,6 @@ function applyPrefix() {
 document.getElementById('prefix-input').addEventListener('input', applyPrefix);
 document.getElementById('start-number-input').addEventListener('input', applyPrefix);
 
-// Settings panel collapse
-const settingsToggle = document.getElementById('settings-toggle');
-const settingsBody = document.getElementById('settings-body');
-const chevron = settingsToggle.querySelector('.chevron');
-
-settingsToggle.addEventListener('click', () => {
-  const opening = !settingsBody.classList.contains('open');
-  settingsBody.classList.toggle('open', opening);
-  chevron.classList.toggle('rotated', opening);
-  settingsToggle.setAttribute('aria-expanded', opening);
-  if (opening) document.getElementById('settings-panel').classList.remove('hint');
-});
-
 // ── Progress bar ──────────────────────────────────────────────────────────────
 function startProgress(bar) {
   bar.style.transition = 'width 2s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -557,7 +544,7 @@ async function downloadAllZip() {
 // ── Add files to the queue ────────────────────────────────────────────────────
 function addFiles(files) {
   const list = document.getElementById('image-list');
-  const supported = new Set(['.jpg', '.jpeg', '.png']);
+  const supported = new Set(['.jpg', '.jpeg', '.png', '.heic', '.heif']);
 
   Array.from(files).forEach(file => {
     const ext = (file.name.match(/\.[^.]+$/) || [''])[0].toLowerCase();
@@ -573,11 +560,6 @@ function addFiles(files) {
     uploadFile(file, card);
     refreshToolbar();
   });
-
-  // Hint the settings bar if it hasn't been opened yet
-  if (settingsToggle.getAttribute('aria-expanded') === 'false') {
-    document.getElementById('settings-panel').classList.add('hint');
-  }
 }
 
 // ── Drop zone ─────────────────────────────────────────────────────────────────
