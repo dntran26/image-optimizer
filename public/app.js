@@ -32,7 +32,7 @@ function updateStats() {
 // Rough formula: accounts for format conversion, quality, and resize.
 // Not perfectly accurate — designed for ballpark feedback while dragging.
 function estimateOutputSize(originalSize, ext, natW, natH, settings) {
-  const { quality, maxWidth, maxHeight, outputFormat } = settings;
+  const { quality, maxWidth, maxHeight, outputFormat, maxSizeKB } = settings;
 
   // Pixel-area reduction from resize (only when image would actually shrink)
   let resizeFactor = 1;
@@ -60,7 +60,11 @@ function estimateOutputSize(originalSize, ext, natW, natH, settings) {
     formatFactor = isPng ? 0.28 * q : Math.min(0.98, 0.9 * q);
   }
 
-  return Math.max(512, Math.round(originalSize * formatFactor * resizeFactor));
+  const estimated = Math.max(512, Math.round(originalSize * formatFactor * resizeFactor));
+  if (maxSizeKB && (outputFormat !== 'png')) {
+    return Math.min(estimated, maxSizeKB * 1024);
+  }
+  return estimated;
 }
 
 function updateEstimate(card) {
@@ -117,7 +121,8 @@ function getSettings() {
   const maxHeight = parseInt(document.getElementById('max-height').value, 10) || null;
   const outputFormat = document.querySelector('.format-btn.active').dataset.format;
   const prefix = toKebabCase(document.getElementById('prefix-input').value);
-  return { quality, maxWidth, maxHeight, outputFormat, prefix };
+  const maxSizeKB = parseInt(document.getElementById('max-filesize').value, 10) || null;
+  return { quality, maxWidth, maxHeight, outputFormat, prefix, maxSizeKB };
 }
 
 function getCardSettings(card) {
@@ -156,6 +161,7 @@ document.getElementById('format-selector').addEventListener('click', (e) => {
 // Resize inputs
 document.getElementById('max-width').addEventListener('input', updateAllEstimates);
 document.getElementById('max-height').addEventListener('input', updateAllEstimates);
+document.getElementById('max-filesize').addEventListener('input', updateAllEstimates);
 
 // ── Prefix ────────────────────────────────────────────────────────────────────
 // Renumbers every non-done, non-in-flight card in DOM order.
@@ -385,7 +391,7 @@ async function uploadFile(file, card) {
 }
 
 // ── Optimize a single card ────────────────────────────────────────────────────
-async function optimizeCard(card) {
+async function optimizeCard(card, { fireConfetti = true } = {}) {
   // Skip cards that are already done, errored, or mid-flight
   if (card.classList.contains('done')) return;
   const optimizeBtn = card.querySelector('.btn-optimize');
@@ -399,7 +405,7 @@ async function optimizeCard(card) {
   const resultEl     = card.querySelector('.card-result');
   const downloadBtn  = card.querySelector('.btn-download');
 
-  const { quality, maxWidth, maxHeight, outputFormat } = getCardSettings(card);
+  const { quality, maxWidth, maxHeight, outputFormat, maxSizeKB } = getCardSettings(card);
   const newName = toKebabCase(nameInput.value) ||
     toKebabCase(card.dataset.originalName || 'image');
   nameInput.value = newName;
@@ -429,6 +435,7 @@ async function optimizeCard(card) {
         maxWidth,
         maxHeight,
         outputFormat,
+        maxSizeKB,
       }),
     });
 
@@ -468,6 +475,20 @@ async function optimizeCard(card) {
     updateStats();
     refreshToolbar();
 
+    if (fireConfetti) {
+      requestAnimationFrame(() => {
+        const rect = downloadBtn.getBoundingClientRect();
+        confetti({
+          particleCount: 90,
+          spread: 60,
+          origin: {
+            x: (rect.left + rect.width / 2) / window.innerWidth,
+            y: Math.min((rect.top + rect.height / 2) / window.innerHeight, 0.95),
+          },
+        });
+      });
+    }
+
   } catch (err) {
     progressWrap.classList.add('hidden');
     progressBar.style.width = '0%';
@@ -496,7 +517,23 @@ async function optimizeAll() {
 
   if (readyCards.length === 0) return;
 
-  await Promise.all(readyCards.map(card => optimizeCard(card)));
+  await Promise.all(readyCards.map(card => optimizeCard(card, { fireConfetti: false })));
+
+  const anySucceeded = readyCards.some(c => c.classList.contains('done'));
+  if (anySucceeded) {
+    requestAnimationFrame(() => {
+      const zipBtn = document.getElementById('btn-download-zip');
+      const rect = zipBtn.getBoundingClientRect();
+      confetti({
+        particleCount: 90,
+        spread: 60,
+        origin: {
+          x: (rect.left + rect.width / 2) / window.innerWidth,
+          y: Math.min((rect.top + rect.height / 2) / window.innerHeight, 0.95),
+        },
+      });
+    });
+  }
 }
 
 // ── Download All as ZIP ───────────────────────────────────────────────────────
@@ -533,6 +570,16 @@ async function downloadAllZip() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+
+    const rect = zipBtn.getBoundingClientRect();
+    confetti({
+      particleCount: 90,
+      spread: 60,
+      origin: {
+        x: (rect.left + rect.width / 2) / window.innerWidth,
+        y: (rect.top + rect.height / 2) / window.innerHeight,
+      },
+    });
   } catch (err) {
     alert(`ZIP download failed: ${err.message}`);
   } finally {
@@ -561,6 +608,18 @@ function addFiles(files) {
     refreshToolbar();
   });
 }
+
+// ── Patch notes toggle ────────────────────────────────────────────────────────
+document.getElementById('patch-toggle').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('patch-panel').classList.toggle('open');
+});
+
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('patch-notes').contains(e.target)) {
+    document.getElementById('patch-panel').classList.remove('open');
+  }
+});
 
 // ── Drop zone ─────────────────────────────────────────────────────────────────
 const dropZone = document.getElementById('drop-zone');

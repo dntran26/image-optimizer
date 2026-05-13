@@ -78,7 +78,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
 
 // Optimize a previously uploaded file
 app.post('/optimize', async (req, res) => {
-  const { tempPath, originalName, newName, quality, maxWidth, maxHeight, outputFormat } = req.body;
+  const { tempPath, originalName, newName, quality, maxWidth, maxHeight, outputFormat, maxSizeKB } = req.body;
 
   if (!tempPath || !fs.existsSync(tempPath)) {
     return res.status(400).json({ error: 'Upload not found — re-upload the file and try again' });
@@ -92,6 +92,7 @@ app.post('/optimize', async (req, res) => {
       maxWidth: maxWidth ? parseInt(maxWidth, 10) : null,
       maxHeight: maxHeight ? parseInt(maxHeight, 10) : null,
       outputFormat: outputFormat || 'auto',
+      maxSizeKB: maxSizeKB ? parseInt(maxSizeKB, 10) : null,
     };
 
     const result = await processImage(tempPath, newName, opts);
