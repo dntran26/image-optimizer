@@ -7,7 +7,7 @@ const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
 const heicConvert = require('heic-convert');
-const { processImage, SUPPORTED_EXTS } = require('./lib/processor');
+const { processFile, SUPPORTED_EXTS, PDF_EXTS } = require('./lib/processor');
 
 const HEIC_EXTS = new Set(['.heic', '.heif']);
 
@@ -58,13 +58,18 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     }
   }
 
+  const finalExt = path.extname(req.file.path).toLowerCase();
+  const isPdf = PDF_EXTS.has(finalExt);
+
   let width = null, height = null;
-  try {
-    const meta = await sharp(req.file.path).metadata();
-    width = meta.width ?? null;
-    height = meta.height ?? null;
-  } catch (err) {
-    console.error('sharp metadata error:', err.message);
+  if (!isPdf) {
+    try {
+      const meta = await sharp(req.file.path).metadata();
+      width = meta.width ?? null;
+      height = meta.height ?? null;
+    } catch (err) {
+      console.error('sharp metadata error:', err.message);
+    }
   }
 
   res.json({
@@ -73,6 +78,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     originalSizeBytes: req.file.size,
     width,
     height,
+    isPdf,
   });
 });
 
@@ -95,7 +101,7 @@ app.post('/optimize', async (req, res) => {
       maxSizeKB: maxSizeKB ? parseInt(maxSizeKB, 10) : null,
     };
 
-    const result = await processImage(tempPath, newName, opts);
+    const result = await processFile(tempPath, newName, opts);
     const newFilePath = path.join(OPTIMIZED_DIR, result.newName);
     const newSizeBytes = (await fs.promises.stat(newFilePath)).size;
     const savedBytes = originalSizeBytes - newSizeBytes;

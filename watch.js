@@ -1,7 +1,7 @@
 const chokidar = require('chokidar');
 const path = require('path');
 const {
-  processImage,
+  processFile,
   promptFilename,
   resolveName,
   logResult,
@@ -39,7 +39,7 @@ async function drainQueue() {
     }
 
     try {
-      logResult(await processImage(filePath, kebab));
+      logResult(await processFile(filePath, kebab));
     } catch (err) {
       console.error(`  ✗  Error processing ${originalName}: ${err.message}\n`);
     }

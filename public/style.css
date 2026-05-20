@@ -148,6 +148,15 @@ h1 {
 .patch-tag.latest { background: var(--green); color: #0a0a0a; }
 .patch-tag.launch { background: var(--accent); color: #fff; }
 
+.patch-date {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  color: var(--text-muted);
+  letter-spacing: 0;
+}
+
 .patch-list {
   list-style: none;
   display: flex;
@@ -492,6 +501,22 @@ input[type="range"]::-webkit-slider-thumb {
   height: 80px;
   object-fit: cover;
   display: block;
+}
+
+.pdf-thumb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--text-dim);
+}
+
+.pdf-thumb .pdf-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
 }
 
 /* Card body */

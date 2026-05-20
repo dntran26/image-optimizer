@@ -71,6 +71,12 @@ function updateEstimate(card) {
   const el = card.querySelector('.size-estimate');
   if (!el) return;
 
+  // PDFs don't get a size estimate — the lossy/format math doesn't apply
+  if (card.classList.contains('is-pdf')) {
+    el.classList.add('hidden');
+    return;
+  }
+
   // Hide once we have actual results
   if (card.classList.contains('done')) {
     el.classList.add('hidden');
@@ -262,10 +268,15 @@ function buildCard(file, localUrl) {
   const id = ++cardIdCounter;
   const baseName = toKebabCase(file.name.replace(/\.[^.]+$/, '')) || `image-${id}`;
   const ext = (file.name.match(/\.[^.]+$/) || [''])[0].toLowerCase();
+  const isPdf = ext === '.pdf';
 
   const li = document.createElement('li');
-  li.className = 'image-card';
+  li.className = 'image-card' + (isPdf ? ' is-pdf' : '');
   li.id = `card-${id}`;
+
+  const thumb = isPdf
+    ? `<div class="pdf-thumb"><svg width="32" height="40" viewBox="0 0 32 40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M5 1h16l6 6v32H5z"/><path d="M21 1v6h6"/></svg><span class="pdf-label">PDF</span></div>`
+    : `<img src="${localUrl}" alt="">`;
 
   li.innerHTML = `
     <div class="drag-handle" title="Drag to reorder">
@@ -279,7 +290,7 @@ function buildCard(file, localUrl) {
       </svg>
     </div>
     <div class="card-thumb">
-      <img src="${localUrl}" alt="">
+      ${thumb}
     </div>
     <div class="card-body">
       <div class="card-name-row">
@@ -315,17 +326,24 @@ function buildCard(file, localUrl) {
   // upload response arrives.
   li.dataset.ext = ext;
   li.dataset.baseName = baseName; // revert target when prefix is cleared
-  const img = li.querySelector('img');
-  img.addEventListener('load', () => {
-    if (img.naturalWidth > 0) {
-      li.dataset.natW = img.naturalWidth;
-      li.dataset.natH = img.naturalHeight;
-      const dimsEl = li.querySelector('.orig-dims');
-      if (!dimsEl.textContent) {
-        dimsEl.textContent = ` · ${img.naturalWidth} × ${img.naturalHeight} px`;
+
+  if (isPdf) {
+    // PDFs have no image dimensions and no resize/format options apply
+    li.querySelector('.card-resize-row').classList.add('hidden');
+    li.querySelector('.size-estimate').classList.add('hidden');
+  } else {
+    const img = li.querySelector('img');
+    img.addEventListener('load', () => {
+      if (img.naturalWidth > 0) {
+        li.dataset.natW = img.naturalWidth;
+        li.dataset.natH = img.naturalHeight;
+        const dimsEl = li.querySelector('.orig-dims');
+        if (!dimsEl.textContent) {
+          dimsEl.textContent = ` · ${img.naturalWidth} × ${img.naturalHeight} px`;
+        }
       }
-    }
-  });
+    });
+  }
 
   // Remove button
   li.querySelector('.btn-remove').addEventListener('click', () => {
@@ -591,7 +609,7 @@ async function downloadAllZip() {
 // ── Add files to the queue ────────────────────────────────────────────────────
 function addFiles(files) {
   const list = document.getElementById('image-list');
-  const supported = new Set(['.jpg', '.jpeg', '.png', '.heic', '.heif']);
+  const supported = new Set(['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif', '.pdf']);
 
   Array.from(files).forEach(file => {
     const ext = (file.name.match(/\.[^.]+$/) || [''])[0].toLowerCase();

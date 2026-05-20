@@ -22,12 +22,20 @@
         </span>
       </div>
       <div class="patch-notes" id="patch-notes">
-        <button class="patch-badge" id="patch-toggle">v1.6 <span class="patch-new">NEW</span></button>
+        <button class="patch-badge" id="patch-toggle">v1.7 <span class="patch-new">NEW</span></button>
         <div class="patch-panel" id="patch-panel">
           <div class="patch-panel-header">Patch Notes</div>
 
           <div class="patch-version">
-            <div class="patch-version-tag">v1.6 <span class="patch-tag latest">LATEST</span></div>
+            <div class="patch-version-tag">v1.7 <span class="patch-tag latest">LATEST</span><span class="patch-date">May 20, 2026</span></div>
+            <ul class="patch-list">
+              <li class="patch-new-item">WebP input support</li>
+              <li class="patch-new-item">PDF optimization via Ghostscript — quality slider maps to /screen, /ebook, /printer, /prepress</li>
+            </ul>
+          </div>
+
+          <div class="patch-version">
+            <div class="patch-version-tag">v1.6 <span class="patch-date">May 13, 2026</span></div>
             <ul class="patch-list">
               <li class="patch-new-item">Max file size target — binary searches quality to hit your KB limit</li>
               <li class="patch-new-item">Glowing download buttons</li>
@@ -36,7 +44,7 @@
           </div>
 
           <div class="patch-version">
-            <div class="patch-version-tag">v1.5</div>
+            <div class="patch-version-tag">v1.5 <span class="patch-date">May 7, 2026</span></div>
             <ul class="patch-list">
               <li class="patch-new-item">HEIC / HEIF support</li>
               <li class="patch-new-item">Settings panel stays open between sessions</li>
@@ -44,21 +52,21 @@
           </div>
 
           <div class="patch-version">
-            <div class="patch-version-tag">v1.4</div>
+            <div class="patch-version-tag">v1.4 <span class="patch-date">Apr 22, 2026</span></div>
             <ul class="patch-list">
               <li class="patch-new-item">Starting number for prefix sequences</li>
             </ul>
           </div>
 
           <div class="patch-version">
-            <div class="patch-version-tag">v1.3</div>
+            <div class="patch-version-tag">v1.3 <span class="patch-date">Mar 31, 2026</span></div>
             <ul class="patch-list">
               <li class="patch-fix-item">EXIF rotation — images auto-orient before processing</li>
             </ul>
           </div>
 
           <div class="patch-version">
-            <div class="patch-version-tag">v1.2</div>
+            <div class="patch-version-tag">v1.2 <span class="patch-date">Mar 31, 2026</span></div>
             <ul class="patch-list">
               <li class="patch-new-item">Per-card resize overrides</li>
               <li class="patch-new-item">Output size estimator with live preview</li>
@@ -67,7 +75,7 @@
           </div>
 
           <div class="patch-version">
-            <div class="patch-version-tag">v1.0 <span class="patch-tag launch">LAUNCH</span></div>
+            <div class="patch-version-tag">v1.0 <span class="patch-tag launch">LAUNCH</span><span class="patch-date">Mar 31, 2026</span></div>
             <ul class="patch-list">
               <li>Web UI with drag &amp; drop</li>
               <li>JPG / PNG / WebP output formats</li>
@@ -83,7 +91,7 @@
 
   <main>
     <div id="drop-zone">
-      <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.heic,.heif" hidden>
+      <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf" hidden>
       <div class="drop-icon">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -92,7 +100,7 @@
         </svg>
       </div>
       <p class="drop-primary">Drop images here</p>
-      <p class="drop-secondary">or <label for="file-input" class="browse-link">browse files</label> &nbsp;·&nbsp; JPG, PNG &amp; HEIC</p>
+      <p class="drop-secondary">or <label for="file-input" class="browse-link">browse files</label> &nbsp;·&nbsp; JPG, PNG, WebP, HEIC &amp; PDF</p>
     </div>
 
     <!-- Settings panel -->

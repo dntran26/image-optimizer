@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const {
-  processImage,
+  processFile,
   promptFilename,
   resolveName,
   logResult,
@@ -37,7 +37,7 @@ async function run() {
     }
 
     try {
-      logResult(await processImage(path.join(INBOX_DIR, file), kebab));
+      logResult(await processFile(path.join(INBOX_DIR, file), kebab));
       processed++;
     } catch (err) {
       console.error(`  ✗  Error: ${err.message}\n`);
