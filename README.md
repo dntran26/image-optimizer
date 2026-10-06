@@ -1,92 +1,119 @@
 # Image Optimizer
 
-Compress and rename JPG/PNG images from a drop folder. Prompts you for a kebab-case filename, compresses, and moves the original out of the way.
+Compress, resize, convert and rename images (and PDFs) for the web. It runs on your own Mac, so client files never leave your machine.
 
-## Folder structure
+## Setup (once)
 
-```
-images/
-  inbox/           ← drop raw images here
-    processed/     ← originals are moved here after handling
-  optimized/       ← compressed output lands here
-```
-
-## Setup
+You need [Node.js](https://nodejs.org) 18 or newer.
 
 ```bash
+git clone https://github.com/dntran26/image-optimizer.git
 cd image-optimizer
 npm install
 ```
 
-> Requires Node.js 18+. `sharp` compiles a native binary on first install.
+PDF optimization also needs Ghostscript. Skip this if you only do images:
+
+```bash
+brew install ghostscript
+```
+
+## Use it
+
+```bash
+npm start
+```
+
+Then open **http://localhost:8080**. Leave the terminal window open while you use it; `Ctrl+C` stops it.
+
+1. **Drop files in.** JPG, PNG, WebP, HEIC (iPhone photos) or PDF, as many as you like.
+2. **Click a filename to rename it.** Whatever you type is cleaned up to lowercase-with-dashes (`Hero Banner` becomes `hero-banner`).
+3. **Check the size before you commit.** Each card shows the exact size the file will be, and it updates live as you change settings.
+4. **Optimize** one card, or **Optimize All**.
+5. **Download** files one by one, or **Download All as ZIP**. Copies are also saved in `images/optimized/`.
+
+The app has a **How it works** button in the header, and a `?` next to each setting explains what it does.
+
+### Settings
+
+| Setting | What it does |
+|---|---|
+| Quality | Higher keeps more detail, lower makes smaller files. 80 is a good default for photos. |
+| Max size | Shrinks anything larger to fit inside this width and/or height, keeping proportions. Never enlarges. |
+| Max file size | Finds the highest quality that fits under this many KB. JPG and WebP only. |
+| Format | **Auto** keeps the original format, except PNGs with no transparency, which become JPG (they are usually photos). Or force JPG, PNG or WebP. |
+| Prefix + Starting # | Renames the whole queue as `prefix-1`, `prefix-2` and so on, in card order. Starting # carries on from an earlier batch. |
+
+### Handy extras
+
+- **Drag cards to reorder** them by the dots on the preview. With a prefix set, the numbering follows the new order.
+- **Per-file resize:** the W and H boxes on a card override the global max size for that file only.
+- **Before and after:** every finished card shows the old and new size, a size bar and the percentage saved.
+- File sizes use the same units as Finder (1 MB = 1,000,000 bytes), so the numbers match what you see on your Mac.
+
+## Getting updates
+
+```bash
+cd image-optimizer
+git pull
+npm install
+```
+
+Then stop the app (`Ctrl+C`) and run `npm start` again. The **v1.x** badge in the header lists what changed.
+
+## Housekeeping
+
+Every original you process is moved to `images/inbox/processed/`, including web uploads (those get random names). Clear that folder out now and then. `images/optimized/` also keeps every output. Both folders are ignored by git, so nothing you process is ever committed.
 
 ---
 
-## Two modes
+## Developer notes
 
-### Watch mode — auto-detects new files
+### Command-line modes
+
+These work off `images/inbox/` and write to `images/optimized/`, using the default settings (quality 80, Auto format, no resize).
+
+**Watch mode** prompts you for a name each time a file lands in the inbox:
 
 ```bash
 npm run watch
 ```
 
-Keeps running and watches `./images/inbox/`. When you drop in a new image it immediately prompts you:
-
 ```
 New file: hero-banner-raw.png
-  New name (Enter to skip): Hero Banner
+  New name (Enter to keep original, "skip" to skip): Hero Banner
   ✓  hero-banner-raw.png  →  hero-banner.png
-     1.23 MB  →  890.4 KB  (saved 334.0 KB (27.1%))
+     1.23 MB  →  890.4 KB  (saved 339.6 KB (27.6%))
 ```
 
-If you press Enter without typing, the file is left in the inbox untouched. Stop watching with `Ctrl+C`.
+Files dropped at the same time are queued, so prompts never overlap. `Ctrl+C` stops it.
 
-Multiple files dropped at once are queued and handled one at a time so prompts never overlap.
-
----
-
-### Manual mode — process everything in the inbox at once
+**Batch mode** loops through everything already in the inbox:
 
 ```bash
 npm run process
 ```
 
-Scans `./images/inbox/` for all JPGs and PNGs and loops through them:
+At the prompt, **Enter** keeps the original name (kebab-cased) and `skip` leaves the file in the inbox untouched.
 
-```
-Found 3 image(s) in ./images/inbox/
+### Processing rules
 
-File: screenshot-2024.png
-  New name (Enter to skip): App Screenshot
-  ✓  →  app-screenshot.png
-     2.10 MB  →  1.45 MB  (saved 651.2 KB (31.0%))
-
-File: photo.jpg
-  New name (Enter to skip):
-  Skipped.
-
-Done.  |  Processed: 1  |  Skipped: 2
-```
-
----
-
-## Processing rules
-
-| Setting | Value |
+| Input | What happens |
 |---|---|
-| JPG quality | 80% |
-| PNG compression | lossless, level 9 |
-| Resize | Never — original dimensions kept |
-| Format | Original format preserved (JPG→JPG, PNG→PNG) |
-| Duplicate names | Appended with `-2`, `-3`, etc. (e.g. `hero-banner-2.png`) |
+| JPG / WebP | Re-encoded at the chosen quality, in the same format unless you pick another. |
+| PNG with transparency | Kept as PNG, lossless compression level 9. |
+| PNG without transparency | Becomes JPG in Auto mode. |
+| HEIC / HEIF | Converted to JPG first, then optimized. Savings are measured against the original HEIC. |
+| PDF | Run through Ghostscript. Quality picks the preset: under 40 `/screen`, 40 to 69 `/ebook`, 70 to 89 `/printer`, 90+ `/prepress`. Small or already-optimized PDFs can come out larger. |
+| All images | Auto-rotated from the camera's EXIF orientation. Duplicate names get `-2`, `-3` and so on. |
 
-## Kebab-case conversion examples
+### Filename cleanup
 
 | You type | Output filename |
 |---|---|
-| `Hero Banner` | `hero-banner.png` |
+| `Hero Banner` | `hero-banner.jpg` |
 | `App Screenshot 2` | `app-screenshot-2.png` |
 | `CTA_button_dark` | `cta-button-dark.jpg` |
-| `logo (final)` | `logo-final.svg` |
+| `logo (final)` | `logo-final.png` |
 
 Special characters are stripped; spaces and underscores become dashes.
