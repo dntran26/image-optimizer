@@ -4,30 +4,53 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Image Optimizer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2313151c'/%3E%3Cpath d='M17.5 6 9 18h7l-1 8 8.5-12h-7z' fill='%239aa8ff'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
     <div class="header-inner">
-      <h1>Image Optimizer</h1>
+      <div class="brand">
+        <div class="brand-mark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h1>Image Optimizer</h1>
+      </div>
       <div class="stats">
         <span class="stat">
           <span class="stat-value" id="stat-count">0</span>
-          <span class="stat-label">processed</span>
+          <span class="stat-label">optimized</span>
         </span>
-        <span class="stat-divider">·</span>
         <span class="stat">
-          <span class="stat-value" id="stat-saved">0 B</span>
+          <span class="stat-value green" id="stat-saved">0 B</span>
           <span class="stat-label">saved</span>
         </span>
       </div>
+      <button class="header-btn" id="help-toggle">How it works</button>
       <div class="patch-notes" id="patch-notes">
-        <button class="patch-badge" id="patch-toggle">v1.7 <span class="patch-new">NEW</span></button>
+        <button class="patch-badge" id="patch-toggle">v1.8 <span class="patch-new">NEW</span></button>
         <div class="patch-panel" id="patch-panel">
           <div class="patch-panel-header">Patch Notes</div>
 
           <div class="patch-version">
-            <div class="patch-version-tag">v1.7 <span class="patch-tag latest">LATEST</span><span class="patch-date">May 20, 2026</span></div>
+            <div class="patch-version-tag">v1.8 <span class="patch-tag latest">LATEST</span><span class="patch-date">Oct 6, 2026</span></div>
+            <ul class="patch-list">
+              <li class="patch-new-item">New dark look, card grid with big previews</li>
+              <li class="patch-new-item">Exact size preview: shows the real output size before you optimize</li>
+              <li class="patch-new-item">Before and after size bar on every finished file</li>
+              <li class="patch-new-item">How it works panel and help tooltips on settings</li>
+              <li class="patch-fix-item">HEIC savings now measured against the original HEIC</li>
+              <li class="patch-fix-item">Portrait phone photos show the right dimensions</li>
+              <li class="patch-fix-item">File sizes now match Finder (1 MB = 1,000,000 bytes)</li>
+            </ul>
+          </div>
+
+
+          <div class="patch-version">
+            <div class="patch-version-tag">v1.7 <span class="patch-date">May 20, 2026</span></div>
             <ul class="patch-list">
               <li class="patch-new-item">WebP input support</li>
               <li class="patch-new-item">PDF optimization via Ghostscript — quality slider maps to /screen, /ebook, /printer, /prepress</li>
@@ -90,82 +113,98 @@
   </header>
 
   <main>
-    <div id="drop-zone">
-      <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf" hidden>
-      <div class="drop-icon">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-      </div>
-      <p class="drop-primary">Drop images here</p>
-      <p class="drop-secondary">or <label for="file-input" class="browse-link">browse files</label> &nbsp;·&nbsp; JPG, PNG, WebP, HEIC &amp; PDF</p>
-    </div>
-
-    <!-- Settings panel -->
-    <div id="settings-panel">
-      <div id="settings-header">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-          <path d="M12 2v2m0 16v2M2 12h2m16 0h2"/>
-        </svg>
-        Global settings
-      </div>
-      <div id="settings-body" class="open">
-        <div class="settings-grid">
-
-          <div class="setting-row">
-            <label for="quality-input">Quality</label>
-            <div class="quality-row">
-              <input type="range" id="quality-input" min="1" max="100" value="80">
-              <span id="quality-value" class="quality-value">80</span>
-            </div>
-          </div>
-
-          <div class="setting-row">
-            <label>Max size</label>
-            <div class="size-row">
-              <input type="number" id="max-width" class="num-input" placeholder="Width" min="1" max="99999">
-              <span class="size-sep">×</span>
-              <input type="number" id="max-height" class="num-input" placeholder="Height" min="1" max="99999">
-              <span class="size-unit">px</span>
-            </div>
-          </div>
-
-          <div class="setting-row">
-            <label for="max-filesize">Max file size</label>
-            <div class="size-row">
-              <input type="number" id="max-filesize" class="num-input" placeholder="e.g. 500" min="1" max="99999">
-              <span class="size-unit">KB &nbsp;<span class="setting-hint">(JPG &amp; WebP only)</span></span>
-            </div>
-          </div>
-
-          <div class="setting-row">
-            <label>Format</label>
-            <div class="format-selector" id="format-selector">
-              <button class="format-btn active" data-format="auto">Auto</button>
-              <button class="format-btn" data-format="jpg">JPG</button>
-              <button class="format-btn" data-format="png">PNG</button>
-              <button class="format-btn" data-format="webp">WebP</button>
-            </div>
-          </div>
-
-          <div class="setting-row">
-            <label for="prefix-input">Prefix</label>
-            <div class="prefix-row">
-              <input type="text" id="prefix-input" class="prefix-input" placeholder="e.g. hero  →  hero-1, hero-2 …" spellcheck="false">
-              <label for="start-number-input" class="start-num-label">Starting #</label>
-              <input type="number" id="start-number-input" class="num-input start-num-input" value="1" min="1">
-            </div>
-          </div>
-
+    <section class="hero">
+      <div id="drop-zone">
+        <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf" hidden>
+        <div class="drop-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <p class="drop-primary">Drop images here</p>
+        <p class="drop-secondary">or <label for="file-input" class="browse-link">browse files</label></p>
+        <div class="type-chips">
+          <span class="type-chip">JPG</span><span class="type-chip">PNG</span><span class="type-chip">WebP</span><span class="type-chip">HEIC</span><span class="type-chip">PDF</span>
         </div>
       </div>
-    </div>
+
+      <!-- Settings panel -->
+      <div id="settings-panel">
+        <div id="settings-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          Global settings
+        </div>
+        <div id="settings-body" class="open">
+          <div class="settings-grid">
+
+            <div class="setting-row">
+              <span class="setting-label"><label for="quality-input">Quality</label><button type="button" class="tip" aria-label="Help" data-tip="Higher keeps more detail, lower makes smaller files. 80 is a good default for photos. For PDFs this picks a Ghostscript preset: under 40 screen, 40 to 69 ebook, 70 to 89 printer, 90+ prepress.">?</button></span>
+              <div class="quality-row">
+                <input type="range" id="quality-input" min="1" max="100" value="80">
+                <span id="quality-value" class="quality-value">80</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <span class="setting-label"><label for="max-width">Max size</label><button type="button" class="tip" aria-label="Help" data-tip="Shrinks anything bigger than this to fit, keeping its proportions. Smaller images are never stretched. Leave blank to keep the original size.">?</button></span>
+              <div class="size-row">
+                <input type="number" id="max-width" class="num-input" placeholder="Width" min="1" max="99999">
+                <span class="size-sep">×</span>
+                <input type="number" id="max-height" class="num-input" placeholder="Height" min="1" max="99999">
+                <span class="size-unit">px</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <span class="setting-label"><label for="max-filesize">Max file size</label><button type="button" class="tip" aria-label="Help" data-tip="Finds the highest quality that still fits under this size. Works for JPG and WebP output. Quality is never raised above the slider.">?</button></span>
+              <div class="size-row">
+                <input type="number" id="max-filesize" class="num-input" placeholder="None" min="1" max="99999">
+                <span class="size-unit">KB <span class="setting-hint">· JPG &amp; WebP only</span></span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <span class="setting-label"><span>Format</span><button type="button" class="tip" aria-label="Help" data-tip="Auto keeps the original format, except PNGs with no transparency, which become JPG because they are usually photos. Pick a format to convert everything to it.">?</button></span>
+              <div class="format-selector" id="format-selector">
+                <button class="format-btn active" data-format="auto">Auto</button>
+                <button class="format-btn" data-format="jpg">JPG</button>
+                <button class="format-btn" data-format="png">PNG</button>
+                <button class="format-btn" data-format="webp">WebP</button>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <span class="setting-label"><label for="prefix-input">Prefix</label><button type="button" class="tip" aria-label="Help" data-tip="Renames every file in the queue as prefix-1, prefix-2 and so on, in card order. Drag cards to change the order. Starting # lets you carry on from an earlier batch.">?</button></span>
+              <div class="prefix-row">
+                <input type="text" id="prefix-input" class="prefix-input" placeholder="e.g. hero" spellcheck="false">
+                <label for="start-number-input" class="start-num-label">Starting #</label>
+                <input type="number" id="start-number-input" class="num-input start-num-input" value="1" min="1">
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works: shown on an empty queue, or via the header button -->
+    <section id="tips">
+      <h2 class="section-title">How it works</h2>
+      <ol class="tips-grid">
+        <li><strong>Drop files in</strong><span>JPG, PNG, WebP, HEIC from an iPhone, or PDF. Drop as many as you like.</span></li>
+        <li><strong>Click a name to rename it</strong><span>Type anything. It is cleaned up to lowercase-with-dashes for the web.</span></li>
+        <li><strong>Drag cards to reorder</strong><span>Grab the dots on a preview. With a prefix set, the numbering follows the order.</span></li>
+        <li><strong>See the size before you commit</strong><span>Each card shows the exact output size, and it updates as you change settings.</span></li>
+        <li><strong>Resize one file</strong><span>The W and H boxes on a card override the global max size for that file only.</span></li>
+        <li><strong>Download one or all</strong><span>Grab files one by one or as a ZIP. Copies also land in <code>images/optimized/</code>.</span></li>
+      </ol>
+    </section>
 
     <!-- Toolbar (shown once images are queued) -->
     <div id="toolbar" class="hidden">
+      <h2 class="section-title queue-title">Queue <small id="queue-count"></small></h2>
       <button id="btn-optimize-all" class="btn-toolbar-primary">Optimize All</button>
       <button id="btn-download-zip" class="btn-toolbar-secondary hidden">Download All as ZIP</button>
     </div>

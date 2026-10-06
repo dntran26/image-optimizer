@@ -7,7 +7,7 @@ const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
 const heicConvert = require('heic-convert');
-const { processFile, SUPPORTED_EXTS, PDF_EXTS } = require('./lib/processor');
+const { processFile, encodeImage, SUPPORTED_EXTS, PDF_EXTS } = require('./lib/processor');
 
 const HEIC_EXTS = new Set(['.heic', '.heif']);
 
@@ -65,8 +65,11 @@ app.post('/upload', upload.single('image'), async (req, res) => {
   if (!isPdf) {
     try {
       const meta = await sharp(req.file.path).metadata();
-      width = meta.width ?? null;
-      height = meta.height ?? null;
+      // EXIF orientations 5-8 are rotated 90°, so the upright image has width and height swapped.
+      // Report the upright size, since that's what the pipeline (which auto-rotates) works from.
+      const swap = (meta.orientation ?? 1) >= 5;
+      width = (swap ? meta.height : meta.width) ?? null;
+      height = (swap ? meta.width : meta.height) ?? null;
     } catch (err) {
       console.error('sharp metadata error:', err.message);
     }
@@ -79,7 +82,16 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     width,
     height,
     isPdf,
+    // Most browsers can't display HEIC, so the card swaps to the converted JPG for its thumbnail
+    previewUrl: HEIC_EXTS.has(uploadedExt) ? `/preview/${path.basename(req.file.path)}` : null,
   });
+});
+
+// Serves an uploaded file for thumbnail previews (only from uploads/, by bare filename)
+app.get('/preview/:name', (req, res) => {
+  const full = path.join(UPLOADS_DIR, path.basename(req.params.name));
+  if (!fs.existsSync(full)) return res.status(404).end();
+  res.sendFile(full);
 });
 
 // Optimize a previously uploaded file
@@ -91,9 +103,13 @@ app.post('/optimize', async (req, res) => {
   }
 
   try {
-    const originalSizeBytes = (await fs.promises.stat(tempPath)).size;
+    // Savings are measured against the file the user uploaded. For HEIC that differs from
+    // tempPath, which is the (much larger) JPG made by the conversion in /upload.
+    const originalSizeBytes = parseInt(req.body.originalSizeBytes, 10)
+      || (await fs.promises.stat(tempPath)).size;
 
     const opts = {
+      originalBytes: originalSizeBytes,
       quality: quality != null ? parseInt(quality, 10) : 80,
       maxWidth: maxWidth ? parseInt(maxWidth, 10) : null,
       maxHeight: maxHeight ? parseInt(maxHeight, 10) : null,
@@ -118,6 +134,31 @@ app.post('/optimize', async (req, res) => {
     });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Live size estimate: runs the real pipeline in memory and reports the exact output size.
+// Nothing is written and the upload is left in place.
+app.post('/estimate', async (req, res) => {
+  const { tempPath, quality, maxWidth, maxHeight, outputFormat, maxSizeKB } = req.body;
+  const resolved = tempPath && path.resolve(tempPath);
+  if (!resolved || !resolved.startsWith(UPLOADS_DIR + path.sep) || !fs.existsSync(resolved)) {
+    return res.status(400).json({ error: 'Upload not found' });
+  }
+  if (PDF_EXTS.has(path.extname(resolved).toLowerCase())) {
+    return res.status(400).json({ error: 'No estimate for PDFs' });
+  }
+  try {
+    const { buffer, outputExt, width, height } = await encodeImage(resolved, {
+      quality: quality != null ? parseInt(quality, 10) : 80,
+      maxWidth: maxWidth ? parseInt(maxWidth, 10) : null,
+      maxHeight: maxHeight ? parseInt(maxHeight, 10) : null,
+      outputFormat: outputFormat || 'auto',
+      maxSizeKB: maxSizeKB ? parseInt(maxSizeKB, 10) : null,
+    });
+    res.json({ sizeBytes: buffer.length, outputExt, width, height });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });

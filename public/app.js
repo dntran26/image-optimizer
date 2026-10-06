@@ -17,103 +17,79 @@ function toKebabCase(str) {
     .replace(/^-|-$/g, '');
 }
 
+// Decimal units (1 KB = 1000 B), matching what macOS Finder shows.
 function formatBytes(bytes) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  if (bytes < 1000) return `${bytes} B`;
+  if (bytes < 1000 * 1000) return `${(bytes / 1000).toFixed(1)} KB`;
+  return `${(bytes / (1000 * 1000)).toFixed(2)} MB`;
 }
 
+let shownSavedBytes = 0;
 function updateStats() {
   document.getElementById('stat-count').textContent = totalProcessed;
-  document.getElementById('stat-saved').textContent = formatBytes(Math.max(0, totalSavedBytes));
+  const el = document.getElementById('stat-saved');
+  const from = shownSavedBytes, to = Math.max(0, totalSavedBytes), start = performance.now();
+  shownSavedBytes = to;
+  const tick = (now) => {
+    const t = Math.min(1, (now - start) / 600);
+    const eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = formatBytes(Math.round(from + (to - from) * eased));
+    if (t < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
-// ── Size estimation ───────────────────────────────────────────────────────────
-// Rough formula: accounts for format conversion, quality, and resize.
-// Not perfectly accurate — designed for ballpark feedback while dragging.
-function estimateOutputSize(originalSize, ext, natW, natH, settings) {
-  const { quality, maxWidth, maxHeight, outputFormat, maxSizeKB } = settings;
-
-  // Pixel-area reduction from resize (only when image would actually shrink)
-  let resizeFactor = 1;
-  if ((maxWidth || maxHeight) && natW > 0 && natH > 0) {
-    const scale = Math.min(
-      1,
-      maxWidth  ? maxWidth  / natW : Infinity,
-      maxHeight ? maxHeight / natH : Infinity,
-    );
-    resizeFactor = scale * scale;
-  }
-
-  // q = quality relative to our default of 80
-  const q = quality / 80;
-  const isPng = ext === '.png';
-
-  let formatFactor;
-  if (outputFormat === 'png') {
-    // Lossless — quality slider has no meaningful effect on PNG output
-    formatFactor = isPng ? 0.92 : 3.5; // JPG→PNG bloats; PNG→PNG minimal savings
-  } else if (outputFormat === 'webp') {
-    formatFactor = isPng ? 0.20 * q : 0.55 * q;
-  } else {
-    // 'jpg' or 'auto' (auto converts PNG→JPG for opaque images)
-    formatFactor = isPng ? 0.28 * q : Math.min(0.98, 0.9 * q);
-  }
-
-  const estimated = Math.max(512, Math.round(originalSize * formatFactor * resizeFactor));
-  if (maxSizeKB && (outputFormat !== 'png')) {
-    return Math.min(estimated, maxSizeKB * 1024);
-  }
-  return estimated;
-}
+// ── Size estimate ─────────────────────────────────────────────────────────────
+// Asks the server to run the real pipeline in memory (/estimate), so the number shown
+// is the exact size Optimize will produce. Debounced per card; stale replies are dropped.
+const estimateTimers = new WeakMap();
+const estimateSeq = new WeakMap();
 
 function updateEstimate(card) {
   const el = card.querySelector('.size-estimate');
   if (!el) return;
 
-  // PDFs don't get a size estimate — the lossy/format math doesn't apply
-  if (card.classList.contains('is-pdf')) {
+  // PDFs don't get an estimate, and done cards show their real result instead
+  if (card.classList.contains('is-pdf') || card.classList.contains('done') || !card.dataset.tempPath) {
     el.classList.add('hidden');
     return;
   }
 
-  // Hide once we have actual results
-  if (card.classList.contains('done')) {
-    el.classList.add('hidden');
-    return;
-  }
+  el.classList.remove('hidden');
+  el.classList.add('is-loading');
+  clearTimeout(estimateTimers.get(card));
+  estimateTimers.set(card, setTimeout(() => fetchEstimate(card, el), 350));
+}
 
+async function fetchEstimate(card, el) {
+  const seq = (estimateSeq.get(card) || 0) + 1;
+  estimateSeq.set(card, seq);
   const originalSize = parseInt(card.dataset.originalSizeBytes, 10);
-  if (!originalSize) { el.classList.add('hidden'); return; }
+  const { quality, maxWidth, maxHeight, outputFormat, maxSizeKB } = getCardSettings(card);
 
-  const natW = parseInt(card.dataset.natW, 10) || 0;
-  const natH = parseInt(card.dataset.natH, 10) || 0;
-  const ext  = card.dataset.ext || '.jpg';
+  try {
+    const res = await fetch('/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tempPath: card.dataset.tempPath, quality, maxWidth, maxHeight, outputFormat, maxSizeKB }),
+    });
+    const data = await res.json();
+    if (estimateSeq.get(card) !== seq || card.classList.contains('done')) return;
+    if (!res.ok) throw new Error(data.error);
 
-  const settings = getCardSettings(card);
-  const estimated = estimateOutputSize(originalSize, ext, natW, natH, settings);
-  const pct = (originalSize - estimated) / originalSize * 100;
-  const sign = pct >= 0 ? '-' : '+';
-
-  let dimsPart = '';
-  if ((settings.maxWidth || settings.maxHeight) && natW > 0 && natH > 0) {
-    const scale = Math.min(
-      1,
-      settings.maxWidth  ? settings.maxWidth  / natW : Infinity,
-      settings.maxHeight ? settings.maxHeight / natH : Infinity,
-    );
-    if (scale < 1) {
-      dimsPart = ` · ${Math.round(natW * scale)} × ${Math.round(natH * scale)} px`;
-    }
+    const pct = (originalSize - data.sizeBytes) / originalSize * 100;
+    const cls = pct >= 30 ? 'est-great' : pct >= 10 ? 'est-ok' : pct < 0 ? 'est-grew' : '';
+    const pctText = `${pct >= 0 ? '−' : '+'}${Math.abs(pct).toFixed(0)}%`;
+    const natW = parseInt(card.dataset.natW, 10) || 0;
+    const resized = natW && data.width !== natW;
+    el.innerHTML = `<span class="meta-label">Will be</span> <strong>${formatBytes(data.sizeBytes)}</strong>`
+      + ` <span class="${cls}">${pctText}</span>`
+      + `<span class="est-detail">${data.outputExt}${resized ? ` · ${data.width} × ${data.height}` : ''}</span>`;
+    el.classList.remove('is-loading');
+  } catch {
+    if (estimateSeq.get(card) !== seq) return;
+    el.classList.add('hidden');
   }
-
-  const badgeClass = pct >= 30 ? 'est-great' : pct >= 10 ? 'est-ok' : pct < 0 ? 'est-grew' : '';
-  const pctBadge = badgeClass
-    ? `<span class="${badgeClass}">${sign}${Math.abs(pct).toFixed(0)}%</span>`
-    : `${sign}${Math.abs(pct).toFixed(0)}%`;
-
-  el.innerHTML = `<span class="meta-label">Estimated:</span> ~${formatBytes(estimated)} (${pctBadge})${dimsPart}`;
-  el.className = 'size-estimate';
 }
 
 function updateAllEstimates() {
@@ -210,6 +186,15 @@ function refreshToolbar() {
   const hasDone = list.querySelector('.image-card.done') !== null;
   toolbar.classList.toggle('hidden', !hasCards);
   zipBtn.classList.toggle('hidden', !hasDone);
+
+  const total = list.children.length;
+  const done = list.querySelectorAll('.image-card.done').length;
+  document.getElementById('queue-count').textContent =
+    `${total} file${total === 1 ? '' : 's'}${done ? ` · ${done} done` : ''}`;
+
+  // Tips show on an empty queue, or whenever the "How it works" button opened them
+  const tips = document.getElementById('tips');
+  tips.classList.toggle('hidden', hasCards && !tips.classList.contains('pinned'));
 }
 
 // ── Drag to reorder ───────────────────────────────────────────────────────────
@@ -279,32 +264,36 @@ function buildCard(file, localUrl) {
     : `<img src="${localUrl}" alt="">`;
 
   li.innerHTML = `
-    <div class="drag-handle" title="Drag to reorder">
-      <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
-        <circle cx="2.5" cy="3"  r="1.4"/>
-        <circle cx="7.5" cy="3"  r="1.4"/>
-        <circle cx="2.5" cy="8"  r="1.4"/>
-        <circle cx="7.5" cy="8"  r="1.4"/>
-        <circle cx="2.5" cy="13" r="1.4"/>
-        <circle cx="7.5" cy="13" r="1.4"/>
-      </svg>
-    </div>
     <div class="card-thumb">
       ${thumb}
+      <div class="drag-handle" title="Drag to reorder">
+        <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
+          <circle cx="2.5" cy="3"  r="1.4"/>
+          <circle cx="7.5" cy="3"  r="1.4"/>
+          <circle cx="2.5" cy="8"  r="1.4"/>
+          <circle cx="7.5" cy="8"  r="1.4"/>
+          <circle cx="2.5" cy="13" r="1.4"/>
+          <circle cx="7.5" cy="13" r="1.4"/>
+        </svg>
+      </div>
+      <button class="btn-remove" title="Remove">&times;</button>
+      <span class="save-pill hidden"></span>
     </div>
     <div class="card-body">
       <div class="card-name-row">
-        <input type="text" class="name-input" value="${baseName}" spellcheck="false">
+        <label class="name-field" title="Click to rename">
+          <input type="text" class="name-input" value="${baseName}" spellcheck="false" aria-label="File name">
+          <svg class="name-edit-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </label>
         <span class="ext-badge">${ext}</span>
-        <button class="btn-remove" title="Remove">&times;</button>
       </div>
       <div class="card-meta">
-        <span class="orig-size"><span class="meta-label">Original:</span> ${formatBytes(file.size)}<span class="orig-dims"></span></span>
+        <span class="orig-size">${formatBytes(file.size)}<span class="orig-dims"></span></span>
         <span class="upload-status">Uploading…</span>
       </div>
       <div class="size-estimate hidden"></div>
       <div class="card-resize-row">
-        <span class="resize-label">Resize:</span>
+        <span class="resize-label">Resize</span>
         <input type="number" class="card-w-input num-input-sm" placeholder="W" min="1" max="99999">
         <span class="size-sep">×</span>
         <input type="number" class="card-h-input num-input-sm" placeholder="H" min="1" max="99999">
@@ -393,6 +382,7 @@ async function uploadFile(file, card) {
     card.dataset.tempPath = data.tempPath;
     card.dataset.originalName = data.originalName;
     card.dataset.originalSizeBytes = data.originalSizeBytes;
+    if (data.previewUrl) card.querySelector('.card-thumb img').src = data.previewUrl;
     if (data.width && data.height) {
       card.dataset.natW = data.width;
       card.dataset.natH = data.height;
@@ -448,6 +438,7 @@ async function optimizeCard(card, { fireConfetti = true } = {}) {
       body: JSON.stringify({
         tempPath: card.dataset.tempPath,
         originalName: card.dataset.originalName,
+        originalSizeBytes: card.dataset.originalSizeBytes,
         newName,
         quality,
         maxWidth,
@@ -471,15 +462,20 @@ async function optimizeCard(card, { fireConfetti = true } = {}) {
     card.dataset.optimizedName = data.newName;
 
     // Show result
+    const barPct = Math.min(100, (data.newSizeBytes / data.originalSizeBytes) * 100);
     resultEl.innerHTML = `
-      <span class="result-before">${data.originalSize}</span>
-      <span class="result-arrow">→</span>
-      <span class="result-after">${data.newSize}</span>
-      <span class="result-badge ${data.grew ? 'grew' : 'saved'}">
-        ${data.grew ? `+${Math.abs(data.savedPct)}%` : `–${data.savedPct}%`}
-      </span>
+      <div class="result-sizes">
+        <span class="result-before">${formatBytes(data.originalSizeBytes)}</span>
+        <span class="result-after">${formatBytes(data.newSizeBytes)}</span>
+      </div>
+      <div class="size-bar ${data.grew ? 'grew' : ''}"><span style="width:${barPct.toFixed(1)}%"></span></div>
     `;
     resultEl.classList.remove('hidden');
+
+    const savePill = card.querySelector('.save-pill');
+    savePill.textContent = data.grew ? `+${Math.abs(data.savedPct)}%` : `−${data.savedPct}%`;
+    savePill.classList.toggle('grew', data.grew);
+    savePill.classList.remove('hidden');
 
     downloadBtn.href = data.downloadUrl;
     downloadBtn.download = data.newName;
@@ -487,6 +483,7 @@ async function optimizeCard(card, { fireConfetti = true } = {}) {
 
     card.classList.add('done');
     card.querySelector('.card-resize-row').classList.add('hidden');
+    optimizeBtn.classList.add('hidden');
 
     totalProcessed++;
     totalSavedBytes += data.savedBytes;
@@ -637,6 +634,15 @@ document.addEventListener('click', (e) => {
   if (!document.getElementById('patch-notes').contains(e.target)) {
     document.getElementById('patch-panel').classList.remove('open');
   }
+});
+
+// ── How it works ──────────────────────────────────────────────────────────────
+document.getElementById('help-toggle').addEventListener('click', () => {
+  const tips = document.getElementById('tips');
+  const opening = tips.classList.contains('hidden');
+  tips.classList.toggle('pinned', opening);
+  refreshToolbar();
+  if (opening) tips.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 });
 
 // ── Drop zone ─────────────────────────────────────────────────────────────────
