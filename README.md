@@ -32,7 +32,7 @@ Then open **http://localhost:8080**. Leave the terminal window open while you us
 
 That's it. Everything below is optional.
 
-The app has a **How it works** button in the header, and a `?` next to each setting explains what it does.
+Settings, Optimize All and a short **Handy extras** list sit in a sidebar that follows you as you scroll. A `?` next to each setting explains what it does.
 
 ### Settings
 

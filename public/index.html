@@ -39,7 +39,8 @@
             <div class="patch-version-tag">v1.8 <span class="patch-tag latest">LATEST</span><span class="patch-date">Oct 6, 2026</span></div>
             <ul class="patch-list">
               <li class="patch-new-item">New dark look, card grid with big previews</li>
-              <li class="patch-new-item">Settings and Optimize All live in a sidebar that follows you down the queue</li>
+              <li class="patch-new-item">Settings, Optimize All and Handy extras live in a sidebar that follows you down the queue</li>
+              <li class="patch-new-item">Long filenames wrap so you can see the whole name</li>
               <li class="patch-new-item">Exact size preview: shows the real output size before you optimize</li>
               <li class="patch-new-item">Before and after size bar on every finished file</li>
               <li class="patch-new-item">How it works panel and help tooltips on settings</li>
@@ -140,13 +141,6 @@
           <li><strong>Optimize</strong><span>Hit Optimize on a card, or Optimize All. Each card shows the exact size it will be first.</span></li>
           <li><strong>Download</strong><span>One by one, or all as a ZIP. Copies also land in <code>images/optimized/</code>.</span></li>
         </ol>
-        <h3 class="tips-subtitle">Optional</h3>
-        <ul class="extras-grid">
-          <li><strong>Rename</strong><span>Click a filename and type. It is cleaned up to lowercase-with-dashes.</span></li>
-          <li><strong>Batch rename</strong><span>Set a Prefix to name everything prefix-1, prefix-2 and so on.</span></li>
-          <li><strong>Reorder</strong><span>Drag a card by the dots on its preview. Numbering follows the order.</span></li>
-          <li><strong>Resize one file</strong><span>The W and H boxes on a card override the global max size.</span></li>
-        </ul>
       </section>
 
       <ul id="image-list"></ul>
@@ -174,9 +168,9 @@
             <div class="setting-row">
               <span class="setting-label"><label for="max-width">Max size</label><button type="button" class="tip" aria-label="Help" data-tip="Shrinks anything bigger than this to fit, keeping its proportions. Smaller images are never stretched. Leave blank to keep the original size.">?</button></span>
               <div class="size-row">
-                <input type="number" id="max-width" class="num-input" placeholder="Width" min="1" max="99999">
+                <input type="number" id="max-width" class="num-input" placeholder="W" min="1" max="99999">
                 <span class="size-sep">×</span>
-                <input type="number" id="max-height" class="num-input" placeholder="Height" min="1" max="99999">
+                <input type="number" id="max-height" class="num-input" placeholder="H" min="1" max="99999">
                 <span class="size-unit">px</span>
               </div>
             </div>
@@ -184,8 +178,8 @@
             <div class="setting-row">
               <span class="setting-label"><label for="max-filesize">Max file size</label><button type="button" class="tip" aria-label="Help" data-tip="Finds the highest quality that still fits under this size. Works for JPG and WebP output. Quality is never raised above the slider.">?</button></span>
               <div class="size-row">
-                <input type="number" id="max-filesize" class="num-input" placeholder="None" min="1" max="99999">
-                <span class="size-unit">KB <span class="setting-hint">· JPG &amp; WebP only</span></span>
+                <input type="number" id="max-filesize" class="num-input" placeholder="Any" min="1" max="99999">
+                <span class="size-unit">KB</span>
               </div>
             </div>
 
@@ -199,7 +193,7 @@
               </div>
             </div>
 
-            <div class="setting-row">
+            <div class="setting-row stack">
               <span class="setting-label"><label for="prefix-input">Prefix</label><button type="button" class="tip" aria-label="Help" data-tip="Renames every file in the queue as prefix-1, prefix-2 and so on, in card order. Drag cards to change the order. Starting # lets you carry on from an earlier batch.">?</button></span>
               <div class="prefix-row">
                 <input type="text" id="prefix-input" class="prefix-input" placeholder="e.g. hero" spellcheck="false">
@@ -218,6 +212,28 @@
         <button id="btn-optimize-all" class="btn-toolbar-primary">Optimize All</button>
         <button id="btn-download-zip" class="btn-toolbar-secondary hidden">Download All as ZIP</button>
       </div>
+      <!-- Handy extras: always-visible reference for the features that have no button -->
+      <section class="extras">
+        <div class="rail-title">Handy extras</div>
+        <ul class="extras-list">
+          <li>
+            <span class="extras-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
+            <div><strong>Rename a file</strong><span>Click its name and type</span></div>
+          </li>
+          <li>
+            <span class="extras-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></span>
+            <div><strong>Name a whole batch</strong><span>Set a Prefix: name-1, name-2…</span></div>
+          </li>
+          <li>
+            <span class="extras-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></span>
+            <div><strong>Change the order</strong><span>Drag a card by its dots</span></div>
+          </li>
+          <li>
+            <span class="extras-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></span>
+            <div><strong>Resize just one</strong><span>Use the W × H boxes on its card</span></div>
+          </li>
+        </ul>
+      </section>
     </aside>
   </main>
 

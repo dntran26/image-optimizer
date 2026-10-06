@@ -7,6 +7,12 @@ let cardIdCounter = 0;
 let dragSrc = null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+// Grows a name box to fit its whole value (long names wrap instead of being cut off)
+function fitName(el) {
+  el.style.height = 'auto';
+  el.style.height = `${el.scrollHeight}px`;
+}
+
 function toKebabCase(str) {
   return str
     .trim()
@@ -159,6 +165,7 @@ function applyPrefix() {
     const inp = card.querySelector('.name-input');
     if (!inp || inp.disabled) return; // skip cards mid-optimization
     inp.value = prefix ? `${prefix}-${n++}` : (card.dataset.baseName || '');
+    fitName(inp);
   });
 }
 
@@ -282,7 +289,7 @@ function buildCard(file, localUrl) {
     <div class="card-body">
       <div class="card-name-row">
         <label class="name-field" title="Click to rename">
-          <input type="text" class="name-input" value="${baseName}" spellcheck="false" aria-label="File name">
+          <textarea class="name-input" rows="1" spellcheck="false" aria-label="File name">${baseName}</textarea>
           <svg class="name-edit-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
         </label>
         <span class="ext-badge">${ext}</span>
@@ -347,11 +354,22 @@ function buildCard(file, localUrl) {
   nameInput.addEventListener('blur', () => {
     const kebab = toKebabCase(nameInput.value) || li.dataset.baseName;
     nameInput.value = kebab;
+    fitName(nameInput);
     const activePrefix = toKebabCase(document.getElementById('prefix-input').value);
     if (!activePrefix) {
       li.dataset.baseName = kebab;
     }
   });
+
+  // It's a wrapping textarea, but a filename is one line: Enter confirms instead of adding a newline
+  nameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); nameInput.blur(); }
+  });
+  nameInput.addEventListener('input', () => {
+    if (nameInput.value.includes('\n')) nameInput.value = nameInput.value.replace(/\n/g, ' ');
+    fitName(nameInput);
+  });
+  requestAnimationFrame(() => fitName(nameInput)); // once it's in the DOM and has a width
 
   // Per-card resize inputs — update estimate on change, disable drag on focus
   const cardWInput = li.querySelector('.card-w-input');
@@ -417,6 +435,7 @@ async function optimizeCard(card, { fireConfetti = true } = {}) {
   const newName = toKebabCase(nameInput.value) ||
     toKebabCase(card.dataset.originalName || 'image');
   nameInput.value = newName;
+  fitName(nameInput);
 
   // Lock UI
   optimizeBtn.disabled = true;
@@ -635,6 +654,19 @@ document.addEventListener('click', (e) => {
     document.getElementById('patch-panel').classList.remove('open');
   }
 });
+
+// ── Tools rail ────────────────────────────────────────────────────────────────
+// Pin just under the header when the rail fits the window; when it's taller than the
+// window, pin by its bottom edge instead so the queue actions never scroll out of view.
+const rail = document.querySelector('.rail');
+function placeRail() {
+  const headerH = document.querySelector('header').offsetHeight;
+  const top = Math.min(headerH + 22, window.innerHeight - rail.offsetHeight - 16);
+  rail.style.setProperty('--rail-top', `${top}px`);
+}
+window.addEventListener('resize', placeRail);
+new ResizeObserver(placeRail).observe(rail);
+placeRail();
 
 // ── How it works ──────────────────────────────────────────────────────────────
 document.getElementById('help-toggle').addEventListener('click', () => {
