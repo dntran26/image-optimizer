@@ -5,14 +5,17 @@ const multer = require('multer');
 const archiver = require('archiver');
 const path = require('path');
 const fs = require('fs');
+const { execFile } = require('child_process');
 const sharp = require('sharp');
 const heicConvert = require('heic-convert');
 const { processFile, encodeImage, SUPPORTED_EXTS, PDF_EXTS } = require('./lib/processor');
 
 const HEIC_EXTS = new Set(['.heic', '.heif']);
 
+const pkg = require('./package.json'); // the version that is running right now
+
 const app = express();
-const PORT = 8080;
+const PORT = parseInt(process.env.PORT, 10) || 8080;
 
 const UPLOADS_DIR = path.resolve('./uploads');
 const OPTIMIZED_DIR = path.resolve('./images/optimized');
@@ -161,6 +164,41 @@ app.post('/estimate', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Is a newer version on GitHub? Compares the running version with package.json on the
+// remote branch. Cached for 30 minutes. Offline, no access, or not a git clone: reports no update.
+let updateCache = { at: 0, data: null };
+
+function compareVersions(a, b) {
+  const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) - (pb[i] || 0);
+  }
+  return 0;
+}
+
+function gitOut(args) {
+  return new Promise((resolve, reject) => {
+    execFile('git', args, { cwd: __dirname, timeout: 15000, env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } },
+      (err, stdout) => (err ? reject(err) : resolve(stdout.trim())));
+  });
+}
+
+app.get('/update-check', async (req, res) => {
+  if (updateCache.data && Date.now() - updateCache.at < 30 * 60 * 1000) return res.json(updateCache.data);
+  let data = { current: pkg.version, latest: pkg.version, note: '', updateAvailable: false };
+  try {
+    await gitOut(['fetch', '--quiet']);
+    const remote = JSON.parse(await gitOut(['show', '@{u}:package.json']));
+    if (compareVersions(remote.version, pkg.version) > 0) {
+      data = { current: pkg.version, latest: remote.version, note: remote.releaseNote || '', updateAvailable: true };
+    }
+  } catch {
+    // stay quiet: no banner is better than a wrong one
+  }
+  updateCache = { at: Date.now(), data };
+  res.json(data);
 });
 
 // Bundle optimized files into a ZIP for bulk download

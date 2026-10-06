@@ -54,13 +54,15 @@ Settings, Optimize All and a short **Handy extras** list sit in a sidebar that f
 
 ## Getting updates
 
+Updates install themselves: every time you start the app with `npm start`, it checks GitHub first and pulls the latest version. When a new version comes out while the app is open, a bar at the top says so. Press `Ctrl+C` in Terminal and run `npm start` again to get it. The version badge in the header lists what changed.
+
+If the update can't run (offline, no GitHub access, or you've edited files yourself), it says so and starts the version you have. To update by hand:
+
 ```bash
 cd image-optimizer
 git pull
 npm install
 ```
-
-Then stop the app (`Ctrl+C`) and run `npm start` again. The **v1.x** badge in the header lists what changed.
 
 ## Housekeeping
 

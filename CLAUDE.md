@@ -76,4 +76,15 @@ processImage(filePath, newBasename, {
 
 All opts are optional; omitting them matches the original CLI behavior exactly. PDFs use `quality` only.
 
-When shipping a user-facing change, add an entry to the patch notes in `public/index.html` and bump the header badge.
+## Releasing an update
+
+Everyone's copy updates itself: `npm start` runs `scripts/update.js` first (the `prestart` script), which does `git pull --ff-only` and reinstalls only if `package.json`/`package-lock.json` changed. It never blocks startup. The server's `GET /update-check` compares the running `package.json` version with the one on the remote branch and the page shows a banner when it's newer.
+
+So a push alone does NOT announce anything. To announce a release:
+1. Bump `version` in `package.json` (and run `npm install --package-lock-only` so the lockfile matches).
+2. Set `releaseNote` in `package.json`: one short line, it is the banner text.
+3. Add the version to the patch notes in `public/index.html` (move the LATEST tag) and update the `#version-badge` fallback text.
+
+Small fixes and doc edits can ship without a bump: they arrive on everyone's next restart, silently.
+
+`PORT` env var overrides 8080 (handy for testing a second copy).

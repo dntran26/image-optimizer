@@ -666,12 +666,52 @@ document.addEventListener('click', (e) => {
 const rail = document.querySelector('.rail');
 function placeRail() {
   const headerH = document.querySelector('header').offsetHeight;
-  const top = Math.min(headerH + 22, window.innerHeight - rail.offsetHeight - 16);
+  const bar = document.getElementById('update-bar');
+  bar.style.top = `${headerH}px`;
+  const barH = bar.classList.contains('hidden') ? 0 : bar.offsetHeight;
+  const top = Math.min(headerH + barH + 22, window.innerHeight - rail.offsetHeight - 16);
   rail.style.setProperty('--rail-top', `${top}px`);
 }
 window.addEventListener('resize', placeRail);
 new ResizeObserver(placeRail).observe(rail);
 placeRail();
+
+// ── Update banner ─────────────────────────────────────────────────────────────
+// Asks the server whether GitHub has a newer version. Checks on load, then hourly.
+// Dismissing hides it until the next version comes out.
+const shortVersion = (v) => 'v' + v.split('.').slice(0, 2).join('.');
+
+async function checkForUpdate() {
+  try {
+    const d = await (await fetch('/update-check')).json();
+    document.getElementById('version-badge').textContent = shortVersion(d.current);
+
+    let dismissed = null;
+    try { dismissed = localStorage.getItem('dismissedUpdate'); } catch {}
+
+    const bar = document.getElementById('update-bar');
+    const show = d.updateAvailable && dismissed !== d.latest;
+    if (show) {
+      bar.querySelector('.update-version').textContent = `${shortVersion(d.latest)} is out`;
+      bar.querySelector('.update-note').textContent = d.note;
+      bar.dataset.version = d.latest;
+    }
+    bar.classList.toggle('hidden', !show);
+    placeRail();
+  } catch {
+    // offline or server restarting: try again next hour
+  }
+}
+
+document.querySelector('.update-x').addEventListener('click', () => {
+  const bar = document.getElementById('update-bar');
+  try { localStorage.setItem('dismissedUpdate', bar.dataset.version); } catch {}
+  bar.classList.add('hidden');
+  placeRail();
+});
+
+checkForUpdate();
+setInterval(checkForUpdate, 60 * 60 * 1000);
 
 // ── How it works ──────────────────────────────────────────────────────────────
 // 'auto' = shown only while the queue is empty; the button switches to 'open' or 'closed'.

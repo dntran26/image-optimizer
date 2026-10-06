@@ -31,12 +31,20 @@
       </div>
       <button class="header-btn active" id="help-toggle" aria-controls="tips" aria-expanded="true">How it works</button>
       <div class="patch-notes" id="patch-notes">
-        <button class="patch-badge" id="patch-toggle">v1.8 <span class="patch-new">NEW</span></button>
+        <button class="patch-badge" id="patch-toggle"><span id="version-badge">v1.9</span> <span class="patch-new">NEW</span></button>
         <div class="patch-panel" id="patch-panel">
           <div class="patch-panel-header">Patch Notes</div>
 
           <div class="patch-version">
-            <div class="patch-version-tag">v1.8 <span class="patch-tag latest">LATEST</span><span class="patch-date">Oct 6, 2026</span></div>
+            <div class="patch-version-tag">v1.9 <span class="patch-tag latest">LATEST</span><span class="patch-date">Oct 6, 2026</span></div>
+            <ul class="patch-list">
+              <li class="patch-new-item">Updates itself: restarting the app pulls the latest version</li>
+              <li class="patch-new-item">A bar at the top tells you when a new version is out</li>
+            </ul>
+          </div>
+
+          <div class="patch-version">
+            <div class="patch-version-tag">v1.8 <span class="patch-date">Oct 6, 2026</span></div>
             <ul class="patch-list">
               <li class="patch-new-item">New dark look, card grid with big previews</li>
               <li class="patch-new-item">Settings, Optimize All and Handy extras live in a sidebar that follows you down the queue</li>
@@ -113,6 +121,17 @@
       </div>
     </div>
   </header>
+
+  <!-- Shown when a newer version is on GitHub (see /update-check) -->
+  <div id="update-bar" class="update-bar hidden" role="status">
+    <div class="update-inner">
+      <span class="update-dot"></span>
+      <strong class="update-version"></strong>
+      <span class="update-note"></span>
+      <span class="update-how">Restart the app to update: <kbd>Ctrl+C</kbd> in Terminal, then start it again</span>
+      <button class="update-x" title="Dismiss" aria-label="Dismiss">&times;</button>
+    </div>
+  </div>
 
   <main class="layout">
     <div class="workspace">

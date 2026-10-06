@@ -1,11 +1,13 @@
 {
   "name": "image-optimizer",
-  "version": "1.0.0",
-  "description": "Image optimization factory for JPG and PNG files",
+  "version": "1.9.0",
+  "description": "Compress, resize, convert and rename images and PDFs for the web",
+  "releaseNote": "Updates itself when you restart, and tells you when a new version is out",
   "scripts": {
+    "prestart": "node scripts/update.js",
+    "start": "node server.js",
     "watch": "node watch.js",
-    "process": "node process.js",
-    "start": "node server.js"
+    "process": "node process.js"
   },
   "dependencies": {
     "archiver": "^7.0.1",
