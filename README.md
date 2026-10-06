@@ -27,10 +27,10 @@ npm start
 Then open **http://localhost:8080**. Leave the terminal window open while you use it; `Ctrl+C` stops it.
 
 1. **Drop files in.** JPG, PNG, WebP, HEIC (iPhone photos) or PDF, as many as you like.
-2. **Click a filename to rename it.** Whatever you type is cleaned up to lowercase-with-dashes (`Hero Banner` becomes `hero-banner`).
-3. **Check the size before you commit.** Each card shows the exact size the file will be, and it updates live as you change settings.
-4. **Optimize** one card, or **Optimize All**.
-5. **Download** files one by one, or **Download All as ZIP**. Copies are also saved in `images/optimized/`.
+2. **Optimize** one card, or **Optimize All**. Each card shows the exact size it will be before you do, and it updates live as you change settings.
+3. **Download** files one by one, or **Download All as ZIP**. Copies are also saved in `images/optimized/`.
+
+That's it. Everything below is optional.
 
 The app has a **How it works** button in the header, and a `?` next to each setting explains what it does.
 
@@ -44,8 +44,9 @@ The app has a **How it works** button in the header, and a `?` next to each sett
 | Format | **Auto** keeps the original format, except PNGs with no transparency, which become JPG (they are usually photos). Or force JPG, PNG or WebP. |
 | Prefix + Starting # | Renames the whole queue as `prefix-1`, `prefix-2` and so on, in card order. Starting # carries on from an earlier batch. |
 
-### Handy extras
+### Optional extras
 
+- **Rename:** click a filename and type. Whatever you type is cleaned up to lowercase-with-dashes (`Hero Banner` becomes `hero-banner`).
 - **Drag cards to reorder** them by the dots on the preview. With a prefix set, the numbering follows the new order.
 - **Per-file resize:** the W and H boxes on a card override the global max size for that file only.
 - **Before and after:** every finished card shows the old and new size, a size bar and the percentage saved.
