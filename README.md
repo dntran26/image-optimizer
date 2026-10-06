@@ -4,7 +4,22 @@ Compress, resize, convert and rename images (and PDFs) for the web. It runs on y
 
 ## Setup (once)
 
-You need [Node.js](https://nodejs.org) 18 or newer. The repo is private, so you also need access to the Nimble-Digital GitHub org.
+You need:
+- [Node.js](https://nodejs.org) 18 or newer
+- [Homebrew](https://brew.sh), for the two installs below
+- Access to the Nimble-Digital GitHub org (the repo is private)
+
+**1. Log in to GitHub from Terminal.** The repo is private, so git needs your login, and GitHub no longer accepts your password there. This saves your login once, for the download and for every automatic update after it:
+
+```bash
+brew install gh
+gh auth login --git-protocol https
+gh auth setup-git
+```
+
+`gh auth login` asks a few questions: pick GitHub.com, then log in with a web browser.
+
+**2. Download and install:**
 
 ```bash
 git clone https://github.com/Nimble-Digital/image-optimizer.git
@@ -12,7 +27,7 @@ cd image-optimizer
 npm install
 ```
 
-PDF optimization also needs Ghostscript. Skip this if you only do images:
+**3. PDF support (optional).** PDF optimization needs Ghostscript. Skip this if you only do images:
 
 ```bash
 brew install ghostscript
@@ -66,7 +81,19 @@ npm install
 
 ## Housekeeping
 
-Every original you process is moved to `images/inbox/processed/`, including web uploads (those get random names). Clear that folder out now and then. `images/optimized/` also keeps every output. Both folders are ignored by git, so nothing you process is ever committed.
+Three folders fill up over time. Clear them out now and then:
+- `images/inbox/processed/`: every original you optimize is moved here (web uploads get random names).
+- `uploads/`: files you dropped in but never optimized, or removed from the queue.
+- `images/optimized/`: a copy of every output.
+
+All three are ignored by git, so nothing you process is ever committed.
+
+## If something's off
+
+- **`Error: listen EADDRINUSE: address already in use :::8080`** when starting: the app is already running in another Terminal window. Use that one, or press `Ctrl+C` there first. To run a second copy anyway: `PORT=8081 npm start`.
+- **"Checking for updates... skipped"**: the message after it says why. Usually you're offline, your GitHub login isn't saved (redo step 1 of Setup), or you've edited the app's files yourself. The app still starts on the version you have.
+- **The page won't load**: check the Terminal window is still open and shows `Image Optimizer UI → http://localhost:8080`. If it closed, run `npm start` again from the `image-optimizer` folder.
+- **A transparent logo came out with a black background**: you picked JPG, which can't store transparency. Switch Format back to Auto, which keeps it as PNG or WebP.
 
 ---
 
@@ -106,6 +133,7 @@ At the prompt, **Enter** keeps the original name (kebab-cased) and `skip` leaves
 | JPG / WebP | Re-encoded at the chosen quality, in the same format unless you pick another. |
 | PNG with transparency | Kept as PNG, lossless compression level 9. |
 | PNG without transparency | Becomes JPG in Auto mode. |
+| Transparent PNG / WebP forced to JPG | JPG can't store transparency, so the see-through areas come out black. Auto mode never does this; it keeps transparent files in their own format. |
 | HEIC / HEIF | Converted to JPG first, then optimized. Savings are measured against the original HEIC. |
 | PDF | Run through Ghostscript. Quality picks the preset: under 40 `/screen`, 40 to 69 `/ebook`, 70 to 89 `/printer`, 90+ `/prepress`. Small or already-optimized PDFs can come out larger. |
 | All images | Auto-rotated from the camera's EXIF orientation. Duplicate names get `-2`, `-3` and so on. |
