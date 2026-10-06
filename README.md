@@ -4,10 +4,10 @@ Compress, resize, convert and rename images (and PDFs) for the web. It runs on y
 
 ## Setup (once)
 
-You need [Node.js](https://nodejs.org) 18 or newer.
+You need [Node.js](https://nodejs.org) 18 or newer. The repo is private, so you also need access to the Nimble-Digital GitHub org.
 
 ```bash
-git clone https://github.com/dntran26/image-optimizer.git
+git clone https://github.com/Nimble-Digital/image-optimizer.git
 cd image-optimizer
 npm install
 ```
