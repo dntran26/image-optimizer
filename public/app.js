@@ -5,6 +5,7 @@ let totalProcessed = 0;
 let totalSavedBytes = 0;
 let cardIdCounter = 0;
 let dragSrc = null;
+let tipsMode = 'auto';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 // Grows a name box to fit its whole value (long names wrap instead of being cut off)
@@ -199,9 +200,13 @@ function refreshToolbar() {
   document.getElementById('queue-count').textContent =
     `${total} file${total === 1 ? '' : 's'}${done ? ` · ${done} done` : ''}`;
 
-  // Tips show on an empty queue, or whenever the "How it works" button opened them
+  // Tips show on an empty queue unless the button closed them, or whenever the button opened them
   const tips = document.getElementById('tips');
-  tips.classList.toggle('hidden', hasCards && !tips.classList.contains('pinned'));
+  const show = tipsMode === 'open' || (tipsMode === 'auto' && !hasCards);
+  tips.classList.toggle('hidden', !show);
+  const btn = document.getElementById('help-toggle');
+  btn.classList.toggle('active', show);
+  btn.setAttribute('aria-expanded', String(show));
 }
 
 // ── Drag to reorder ───────────────────────────────────────────────────────────
@@ -669,10 +674,11 @@ new ResizeObserver(placeRail).observe(rail);
 placeRail();
 
 // ── How it works ──────────────────────────────────────────────────────────────
+// 'auto' = shown only while the queue is empty; the button switches to 'open' or 'closed'.
 document.getElementById('help-toggle').addEventListener('click', () => {
   const tips = document.getElementById('tips');
   const opening = tips.classList.contains('hidden');
-  tips.classList.toggle('pinned', opening);
+  tipsMode = opening ? 'open' : 'closed';
   refreshToolbar();
   if (opening) tips.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 });

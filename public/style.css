@@ -108,6 +108,7 @@ h1 { font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
   transition: border-color 0.15s, color 0.15s;
 }
 .header-btn:hover, .patch-badge:hover { border-color: var(--border-hover); color: var(--text); }
+.header-btn.active { border-color: var(--accent-line); background: var(--accent-dim); color: var(--accent); }
 
 .patch-new {
   background: var(--accent);
