@@ -39,6 +39,7 @@
             <div class="patch-version-tag">v1.8 <span class="patch-tag latest">LATEST</span><span class="patch-date">Oct 6, 2026</span></div>
             <ul class="patch-list">
               <li class="patch-new-item">New dark look, card grid with big previews</li>
+              <li class="patch-new-item">Settings and Optimize All live in a sidebar that follows you down the queue</li>
               <li class="patch-new-item">Exact size preview: shows the real output size before you optimize</li>
               <li class="patch-new-item">Before and after size bar on every finished file</li>
               <li class="patch-new-item">How it works panel and help tooltips on settings</li>
@@ -112,8 +113,8 @@
     </div>
   </header>
 
-  <main>
-    <section class="hero">
+  <main class="layout">
+    <div class="workspace">
       <div id="drop-zone">
         <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf" hidden>
         <div class="drop-icon">
@@ -130,6 +131,29 @@
         </div>
       </div>
 
+
+      <!-- How it works: shown on an empty queue, or via the header button -->
+      <section id="tips">
+        <h2 class="section-title">How it works</h2>
+        <ol class="tips-grid">
+          <li><strong>Drop files in</strong><span>JPG, PNG, WebP, HEIC from an iPhone, or PDF. Drop as many as you like.</span></li>
+          <li><strong>Optimize</strong><span>Hit Optimize on a card, or Optimize All. Each card shows the exact size it will be first.</span></li>
+          <li><strong>Download</strong><span>One by one, or all as a ZIP. Copies also land in <code>images/optimized/</code>.</span></li>
+        </ol>
+        <h3 class="tips-subtitle">Optional</h3>
+        <ul class="extras-grid">
+          <li><strong>Rename</strong><span>Click a filename and type. It is cleaned up to lowercase-with-dashes.</span></li>
+          <li><strong>Batch rename</strong><span>Set a Prefix to name everything prefix-1, prefix-2 and so on.</span></li>
+          <li><strong>Reorder</strong><span>Drag a card by the dots on its preview. Numbering follows the order.</span></li>
+          <li><strong>Resize one file</strong><span>The W and H boxes on a card override the global max size.</span></li>
+        </ul>
+      </section>
+
+      <ul id="image-list"></ul>
+    </div>
+
+    <!-- Tools rail: stays in view while the queue scrolls -->
+    <aside class="rail">
       <!-- Settings panel -->
       <div id="settings-panel">
         <div id="settings-header">
@@ -187,33 +211,14 @@
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- How it works: shown on an empty queue, or via the header button -->
-    <section id="tips">
-      <h2 class="section-title">How it works</h2>
-      <ol class="tips-grid">
-        <li><strong>Drop files in</strong><span>JPG, PNG, WebP, HEIC from an iPhone, or PDF. Drop as many as you like.</span></li>
-        <li><strong>Optimize</strong><span>Hit Optimize on a card, or Optimize All. Each card shows the exact size it will be first.</span></li>
-        <li><strong>Download</strong><span>One by one, or all as a ZIP. Copies also land in <code>images/optimized/</code>.</span></li>
-      </ol>
-      <h3 class="tips-subtitle">Optional</h3>
-      <ul class="extras-grid">
-        <li><strong>Rename</strong><span>Click a filename and type. It is cleaned up to lowercase-with-dashes.</span></li>
-        <li><strong>Batch rename</strong><span>Set a Prefix to name everything prefix-1, prefix-2 and so on.</span></li>
-        <li><strong>Reorder</strong><span>Drag a card by the dots on its preview. Numbering follows the order.</span></li>
-        <li><strong>Resize one file</strong><span>The W and H boxes on a card override the global max size.</span></li>
-      </ul>
-    </section>
-
-    <!-- Toolbar (shown once images are queued) -->
-    <div id="toolbar" class="hidden">
-      <h2 class="section-title queue-title">Queue <small id="queue-count"></small></h2>
-      <button id="btn-optimize-all" class="btn-toolbar-primary">Optimize All</button>
-      <button id="btn-download-zip" class="btn-toolbar-secondary hidden">Download All as ZIP</button>
-    </div>
-
-    <ul id="image-list"></ul>
+      <!-- Toolbar (shown once images are queued) -->
+      <div id="toolbar" class="hidden">
+        <div class="queue-title">Queue <small id="queue-count"></small></div>
+        <button id="btn-optimize-all" class="btn-toolbar-primary">Optimize All</button>
+        <button id="btn-download-zip" class="btn-toolbar-secondary hidden">Download All as ZIP</button>
+      </div>
+    </aside>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1/dist/confetti.browser.min.js"></script>
