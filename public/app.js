@@ -59,6 +59,7 @@ function updateEstimate(card) {
   // PDFs don't get an estimate, and done cards show their real result instead
   if (card.classList.contains('is-pdf') || card.classList.contains('done') || !card.dataset.tempPath) {
     el.classList.add('hidden');
+    refreshQueueTotal();
     return;
   }
 
@@ -93,10 +94,44 @@ async function fetchEstimate(card, el) {
       + ` <span class="${cls}">${pctText}</span>`
       + `<span class="est-detail">${data.outputExt}${resized ? ` · ${data.width} × ${data.height}` : ''}</span>`;
     el.classList.remove('is-loading');
+    card.dataset.estBytes = data.sizeBytes;
   } catch {
     if (estimateSeq.get(card) !== seq) return;
     el.classList.add('hidden');
+    delete card.dataset.estBytes;
   }
+  refreshQueueTotal();
+}
+
+// ── Queue total ───────────────────────────────────────────────────────────────
+// "14.2 MB → 1.9 MB" for the whole queue, from each card's live estimate (or its real
+// result once done). Hidden while any estimate is still in flight so it never shows a
+// partial sum. PDFs have no estimate, so they count on the left only and are called out.
+function refreshQueueTotal() {
+  const el = document.getElementById('queue-total');
+  const cards = Array.from(document.querySelectorAll('#image-list .image-card'));
+  let before = 0, after = 0, pdfs = 0, pending = false;
+  cards.forEach(card => {
+    if (card.querySelector('.upload-status').classList.contains('error')) return; // never got a size
+    const orig = parseInt(card.dataset.originalSizeBytes, 10);
+    if (!orig) { pending = true; return; } // still uploading
+    before += orig;
+    if (card.classList.contains('is-pdf')) {
+      if (card.dataset.estBytes) after += parseInt(card.dataset.estBytes, 10); // done PDF
+      else pdfs++;
+      return;
+    }
+    if (!card.dataset.estBytes || card.querySelector('.size-estimate').classList.contains('is-loading')) {
+      pending = true;
+      return;
+    }
+    after += parseInt(card.dataset.estBytes, 10);
+  });
+  const show = cards.length > 0 && !pending && (after > 0 || pdfs < cards.length);
+  el.classList.toggle('hidden', !show);
+  if (!show) return;
+  el.innerHTML = `${formatBytes(before)} → <strong>${formatBytes(after)}</strong>`
+    + (pdfs ? ` <span class="queue-pdf">+ ${pdfs} PDF</span>` : '');
 }
 
 function updateAllEstimates() {
@@ -351,6 +386,7 @@ function buildCard(file, localUrl) {
     li.remove();
     applyPrefix();
     refreshToolbar();
+    refreshQueueTotal();
   });
 
   // Kebab-case the name field on blur.
@@ -418,6 +454,7 @@ async function uploadFile(file, card) {
   } catch (err) {
     statusEl.textContent = `Upload failed: ${err.message}`;
     statusEl.classList.add('error');
+    refreshQueueTotal();
   }
 }
 
@@ -482,8 +519,9 @@ async function optimizeCard(card, { fireConfetti = true } = {}) {
     // Update ext badge — PNG without alpha may have been converted to JPG
     extBadge.textContent = '.' + data.newName.split('.').pop();
 
-    // Store optimized filename for ZIP download
+    // Store optimized filename for ZIP download, and the real size for the queue total
     card.dataset.optimizedName = data.newName;
+    card.dataset.estBytes = data.newSizeBytes;
 
     // Show result
     const barPct = Math.min(100, (data.newSizeBytes / data.originalSizeBytes) * 100);
@@ -513,6 +551,7 @@ async function optimizeCard(card, { fireConfetti = true } = {}) {
     totalSavedBytes += data.savedBytes;
     updateStats();
     refreshToolbar();
+    refreshQueueTotal();
 
     if (fireConfetti) {
       requestAnimationFrame(() => {
@@ -751,6 +790,49 @@ fileInput.addEventListener('change', () => {
   fileInput.value = '';
 });
 
+// Drop anywhere on the page. Card reordering uses the same drag events, so only react to
+// drags that carry files (dragSrc is set while a card is being moved).
+const hasFiles = (e) => !dragSrc && e.dataTransfer && Array.from(e.dataTransfer.types).includes('Files');
+let dragDepth = 0;
+document.addEventListener('dragenter', (e) => {
+  if (!hasFiles(e)) return;
+  dragDepth++;
+  document.body.classList.add('drag-over');
+});
+document.addEventListener('dragleave', (e) => {
+  if (!hasFiles(e)) return;
+  if (--dragDepth <= 0) { dragDepth = 0; document.body.classList.remove('drag-over'); }
+});
+document.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
+document.addEventListener('drop', (e) => {
+  if (!hasFiles(e)) return;
+  e.preventDefault();
+  dragDepth = 0;
+  document.body.classList.remove('drag-over');
+  dropZone.classList.remove('drag-over');
+  if (!dropZone.contains(e.target)) addFiles(e.dataTransfer.files); // the zone handles its own drop
+});
+
+// Paste a screenshot or a copied image. Pasted images arrive as "image.png", so they get
+// numbered names instead. Pasting into a text field is left alone.
+let pasteCount = 0;
+document.addEventListener('paste', (e) => {
+  const tag = document.activeElement && document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  const files = Array.from(e.clipboardData.items)
+    .filter(item => item.kind === 'file')
+    .map(item => item.getAsFile())
+    .filter(Boolean)
+    .map(f => {
+      const ext = (f.name.match(/\.[^.]+$/) || ['.png'])[0];
+      return new File([f], `pasted-${++pasteCount}${ext}`, { type: f.type });
+    });
+  if (files.length) { e.preventDefault(); addFiles(files); }
+});
+
 // ── Toolbar buttons ───────────────────────────────────────────────────────────
 document.getElementById('btn-optimize-all').addEventListener('click', optimizeAll);
 document.getElementById('btn-download-zip').addEventListener('click', downloadAllZip);
+document.getElementById('btn-reveal').addEventListener('click', () => {
+  fetch('/reveal', { method: 'POST' }).catch(() => {});
+});

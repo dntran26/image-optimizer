@@ -21,6 +21,7 @@ const UPLOADS_DIR = path.resolve('./uploads');
 const OPTIMIZED_DIR = path.resolve('./images/optimized');
 
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+fs.mkdirSync(OPTIMIZED_DIR, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: UPLOADS_DIR,
@@ -199,6 +200,13 @@ app.get('/update-check', async (req, res) => {
   }
   updateCache = { at: Date.now(), data };
   res.json(data);
+});
+
+// Opens images/optimized in Finder (Explorer on Windows). Elsewhere it does nothing.
+app.post('/reveal', (req, res) => {
+  const opener = { darwin: 'open', win32: 'explorer' }[process.platform];
+  if (!opener) return res.status(204).end();
+  execFile(opener, [OPTIMIZED_DIR], () => res.status(200).end());
 });
 
 // Bundle optimized files into a ZIP for bulk download

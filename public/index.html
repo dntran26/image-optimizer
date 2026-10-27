@@ -15,7 +15,7 @@
     <div class="header-inner">
       <div class="brand">
         <div class="brand-mark">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         </div>
         <h1>Image Optimizer</h1>
       </div>
@@ -31,12 +31,22 @@
       </div>
       <button class="header-btn active" id="help-toggle" aria-controls="tips" aria-expanded="true">How it works</button>
       <div class="patch-notes" id="patch-notes">
-        <button class="patch-badge" id="patch-toggle"><span id="version-badge">v1.9</span> <span class="patch-new">NEW</span></button>
+        <button class="patch-badge" id="patch-toggle"><span id="version-badge">v2.0</span> <span class="patch-new">NEW</span></button>
         <div class="patch-panel" id="patch-panel">
           <div class="patch-panel-header">Patch Notes</div>
 
           <div class="patch-version">
-            <div class="patch-version-tag">v1.9 <span class="patch-tag latest">LATEST</span><span class="patch-date">Oct 6, 2026</span></div>
+            <div class="patch-version-tag">v2.0 <span class="patch-tag latest">LATEST</span><span class="patch-date">Oct 27, 2026</span></div>
+            <ul class="patch-list">
+              <li class="patch-new-item">Drop files anywhere on the page, or paste a screenshot with Cmd+V</li>
+              <li class="patch-new-item">Queue panel totals up what the whole batch will shrink to before you optimize</li>
+              <li class="patch-new-item">Show in Finder opens the optimized folder</li>
+              <li class="patch-new-item">Flatter look: square corners, no glow</li>
+            </ul>
+          </div>
+
+          <div class="patch-version">
+            <div class="patch-version-tag">v1.9 <span class="patch-date">Oct 6, 2026</span></div>
             <ul class="patch-list">
               <li class="patch-new-item">Updates itself: restarting the app pulls the latest version</li>
               <li class="patch-new-item">A bar at the top tells you when a new version is out</li>
@@ -145,7 +155,7 @@
           </svg>
         </div>
         <p class="drop-primary">Drop images here</p>
-        <p class="drop-secondary">or <label for="file-input" class="browse-link">browse files</label></p>
+        <p class="drop-secondary">or <label for="file-input" class="browse-link">browse files</label>, or paste a screenshot</p>
         <div class="type-chips">
           <span class="type-chip">JPG</span><span class="type-chip">PNG</span><span class="type-chip">WebP</span><span class="type-chip">HEIC</span><span class="type-chip">PDF</span>
         </div>
@@ -156,7 +166,7 @@
       <section id="tips">
         <h2 class="section-title">How it works</h2>
         <ol class="tips-grid">
-          <li><strong>Drop files in</strong><span>JPG, PNG, WebP, HEIC from an iPhone, or PDF. Drop as many as you like.</span></li>
+          <li><strong>Drop files in</strong><span>JPG, PNG, WebP, HEIC from an iPhone, or PDF. Drop them anywhere on the page, or paste a screenshot.</span></li>
           <li><strong>Optimize</strong><span>Hit Optimize on a card, or Optimize All. Each card shows the exact size it will be first.</span></li>
           <li><strong>Download</strong><span>One by one, or all as a ZIP. Copies also land in <code>images/optimized/</code>.</span></li>
         </ol>
@@ -228,8 +238,10 @@
       <!-- Toolbar (shown once images are queued) -->
       <div id="toolbar" class="hidden">
         <div class="queue-title">Queue <small id="queue-count"></small></div>
+        <div class="queue-total hidden" id="queue-total"></div>
         <button id="btn-optimize-all" class="btn-toolbar-primary">Optimize All</button>
         <button id="btn-download-zip" class="btn-toolbar-secondary hidden">Download All as ZIP</button>
+        <button id="btn-reveal" class="btn-toolbar-secondary btn-toolbar-neutral">Show in Finder</button>
       </div>
       <!-- Handy extras: always-visible reference for the features that have no button -->
       <section class="extras">

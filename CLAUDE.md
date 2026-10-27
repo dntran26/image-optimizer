@@ -55,11 +55,11 @@ Server runs on **port 8080**. Change the `PORT` constant at the top of `server.j
 | File | Role |
 |---|---|
 | `lib/processor.js` | `processFile` dispatches to `processImage` (sharp) or `processPdf` (Ghostscript). `encodeImage` runs the sharp pipeline in memory and is shared by `processImage` and the web UI's `/estimate`, so the preview size is exactly the real output size. Used by both CLI and web. |
-| `server.js` | Express backend. `POST /upload` saves to `uploads/` (HEIC converted, upright EXIF dims, `previewUrl` for HEIC thumbs), `GET /preview/:name` serves those thumbs, `POST /estimate` returns the exact output size without writing, `POST /optimize` calls `processFile`, `POST /zip` streams an archiver ZIP of optimized files. |
+| `server.js` | Express backend. `POST /upload` saves to `uploads/` (HEIC converted, upright EXIF dims, `previewUrl` for HEIC thumbs), `GET /preview/:name` serves those thumbs, `POST /estimate` returns the exact output size without writing, `POST /optimize` calls `processFile`, `POST /zip` streams an archiver ZIP of optimized files, `POST /reveal` opens `images/optimized/` in Finder. |
 | `watch.js` | chokidar watcher on `images/inbox/`. Prompts for filename on each new file. |
 | `process.js` | One-shot batch: scans inbox, loops through files with filename prompts. |
-| `public/app.js` | All frontend logic: drag & drop, upload, card rendering, debounced live estimates, optimize, settings, drag-to-reorder, How it works panel, ZIP download. |
-| `public/style.css` | Dark premium theme (Onest + IBM Plex Mono). Colour tokens on `:root` are contrast-checked against `--surface-2`; `--fill` drives the quality slider track. Help tooltips are CSS-only (`.tip[data-tip]`). |
+| `public/app.js` | All frontend logic: drag & drop (anywhere on the page) and paste, upload, card rendering, debounced live estimates, queue total, optimize, settings, drag-to-reorder, How it works panel, ZIP download, Show in Finder. |
+| `public/style.css` | Flat dark theme (Onest + IBM Plex Mono): 1px borders, 8px corners, no gradients or glows. Colour tokens on `:root` are contrast-checked against `--surface-2`; `--fill` drives the quality slider track. Help tooltips are CSS-only (`.tip[data-tip]`). |
 
 ## processFile / processImage opts
 

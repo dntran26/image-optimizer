@@ -41,9 +41,9 @@ npm start
 
 Then open **http://localhost:8080**. Leave the terminal window open while you use it; `Ctrl+C` stops it.
 
-1. **Drop files in.** JPG, PNG, WebP, HEIC (iPhone photos) or PDF, as many as you like.
+1. **Drop files in.** JPG, PNG, WebP, HEIC (iPhone photos) or PDF, as many as you like. Drop them anywhere on the page, or paste a screenshot with Cmd+V.
 2. **Optimize** one card, or **Optimize All**. Each card shows the exact size it will be before you do, and it updates live as you change settings.
-3. **Download** files one by one, or **Download All as ZIP**. Copies are also saved in `images/optimized/`.
+3. **Download** files one by one, or **Download All as ZIP**. Copies are also saved in `images/optimized/` (**Show in Finder** opens that folder).
 
 That's it. Everything below is optional.
 
