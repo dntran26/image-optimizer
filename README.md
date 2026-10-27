@@ -4,42 +4,34 @@ Nimble's image prep tool: drop images in, get smaller, renamed, web-ready files 
 
 Compress, resize, convert and rename images (and PDFs) for the web. It runs on your own Mac, so client files never leave your machine.
 
-## Setup (once)
+## Setup (once, about 10 minutes)
 
-This takes about ten minutes and you only do it once. Everything happens in **Terminal**, the app that lets you type commands to your Mac. Open it from Spotlight: press `Cmd+Space`, type `Terminal`, press Enter. A white or black window appears with a blinking cursor. That's where you paste the commands below, one block at a time, pressing Enter after each.
+Everything happens in Terminal: press `Cmd+Space`, type `Terminal`, press Enter. Paste each command below, press Enter, wait for it to finish.
 
-Two things to know before you start:
-- Commands run in a folder, like Finder has a current folder. Terminal starts in your home folder (the one with Desktop, Documents and Downloads in it).
-- If a popup asks to install "command line developer tools", click **Install** and wait for it to finish, then run the command again.
-
-**1. Install Homebrew.** It installs the other tools. Paste this and press Enter; it asks for your Mac password (nothing shows while you type it, that's normal) and takes a few minutes:
+**1. Homebrew.** Installs the rest. It asks for your Mac password (nothing shows while you type it):
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-When it finishes it prints a **Next steps** section with two commands starting `echo` and `eval`. Copy and run those too, or Terminal won't find `brew`.
+At the end it prints two "Next steps" commands. Run those too.
 
-**2. Install Node, the GitHub tool and Ghostscript:**
+**2. The tools:**
 
 ```bash
 brew install node gh ghostscript
 ```
 
-(Node runs the app, `gh` logs you in to GitHub, Ghostscript handles PDFs.)
-
-**3. Get access to the code.** The repo is private, so you need a GitHub account that is in the Nimble-Digital organisation. If you don't have one, make a free account at https://github.com, then ask Danny to add you. Wait for the invite email and accept it before the next step.
-
-**4. Log in to GitHub from Terminal.** This saves your login once, for the download and for every automatic update after it:
+**3. GitHub.** Make a free account at https://github.com if you don't have one, send Danny your username, and accept the invite email. Then:
 
 ```bash
 gh auth login --git-protocol https
 gh auth setup-git
 ```
 
-`gh auth login` asks a few questions. Answer: **GitHub.com**, **Yes** to authenticate Git, **Login with a web browser**. It shows a one-time code; press Enter, paste the code into the browser page that opens, and approve.
+Answer **GitHub.com**, **Yes**, **Login with a web browser**, then paste the code it shows into the browser page.
 
-**5. Download the app:**
+**4. The app:**
 
 ```bash
 git clone https://github.com/Nimble-Digital/image-optimizer.git
@@ -47,18 +39,18 @@ cd image-optimizer
 npm install
 ```
 
-This makes an `image-optimizer` folder in your home folder and installs what it needs. You can see it in Finder next to Desktop and Documents.
+Done. If a popup ever asks to install "command line developer tools", click **Install**, then run the command again.
 
 ## Use it
 
-Every time you want to use it, open Terminal and run:
+Open Terminal and run:
 
 ```bash
 cd image-optimizer
 npm start
 ```
 
-Then open **http://localhost:8080** in your browser. Leave the Terminal window open while you use the app. To stop it, click the Terminal window and press `Control+C` (Control, not Command).
+Open **http://localhost:8080**. Keep the Terminal window open while you use it; `Control+C` stops it.
 
 1. **Drop files in.** JPG, PNG, WebP, AVIF, HEIC (iPhone photos) or PDF, as many as you like. Drop them anywhere on the page, or paste a screenshot with Cmd+V.
 2. **Optimize** one card, or **Optimize All**. Each card shows the exact size it will be before you do, and it updates live as you change settings.
