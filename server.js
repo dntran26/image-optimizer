@@ -246,5 +246,5 @@ app.post('/zip', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\nImage Optimizer UI → http://localhost:${PORT}\n`);
+  console.log(`\nPress → http://localhost:${PORT}\n`);
 });

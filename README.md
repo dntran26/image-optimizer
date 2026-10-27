@@ -1,4 +1,6 @@
-# Image Optimizer
+# Press
+
+Nimble's image prep tool: drop images in, get smaller, renamed, web-ready files out.
 
 Compress, resize, convert and rename images (and PDFs) for the web. It runs on your own Mac, so client files never leave your machine.
 
@@ -41,7 +43,7 @@ npm start
 
 Then open **http://localhost:8080**. Leave the terminal window open while you use it; `Ctrl+C` stops it.
 
-1. **Drop files in.** JPG, PNG, WebP, HEIC (iPhone photos) or PDF, as many as you like. Drop them anywhere on the page, or paste a screenshot with Cmd+V.
+1. **Drop files in.** JPG, PNG, WebP, AVIF, HEIC (iPhone photos) or PDF, as many as you like. Drop them anywhere on the page, or paste a screenshot with Cmd+V.
 2. **Optimize** one card, or **Optimize All**. Each card shows the exact size it will be before you do, and it updates live as you change settings.
 3. **Download** files one by one, or **Download All as ZIP**. Copies are also saved in `images/optimized/` (**Show in Finder** opens that folder).
 
@@ -92,7 +94,7 @@ All three are ignored by git, so nothing you process is ever committed.
 
 - **`Error: listen EADDRINUSE: address already in use :::8080`** when starting: the app is already running in another Terminal window. Use that one, or press `Ctrl+C` there first. To run a second copy anyway: `PORT=8081 npm start`.
 - **"Checking for updates... skipped"**: the message after it says why. Usually you're offline, your GitHub login isn't saved (redo step 1 of Setup), or you've edited the app's files yourself. The app still starts on the version you have.
-- **The page won't load**: check the Terminal window is still open and shows `Image Optimizer UI → http://localhost:8080`. If it closed, run `npm start` again from the `image-optimizer` folder.
+- **The page won't load**: check the Terminal window is still open and shows `Press → http://localhost:8080`. If it closed, run `npm start` again from the `image-optimizer` folder.
 - **A transparent logo came out with a black background**: you picked JPG, which can't store transparency. Switch Format back to Auto, which keeps it as PNG or WebP.
 
 ---
@@ -135,6 +137,7 @@ At the prompt, **Enter** keeps the original name (kebab-cased) and `skip` leaves
 | PNG without transparency | Becomes JPG in Auto mode. |
 | Transparent PNG / WebP forced to JPG | JPG can't store transparency, so the see-through areas come out black. Auto mode never does this; it keeps transparent files in their own format. |
 | HEIC / HEIF | Converted to JPG first, then optimized. Savings are measured against the original HEIC. |
+| AVIF | Becomes a JPG on Auto (PNG if it uses transparency), resized if you set a max size. Pick WebP or PNG in Format to convert to those instead. |
 | PDF | Run through Ghostscript. Quality picks the preset: under 40 `/screen`, 40 to 69 `/ebook`, 70 to 89 `/printer`, 90+ `/prepress`. Small or already-optimized PDFs can come out larger. |
 | All images | Auto-rotated from the camera's EXIF orientation. Duplicate names get `-2`, `-3` and so on. |
 

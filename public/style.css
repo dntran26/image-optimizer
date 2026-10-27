@@ -69,9 +69,7 @@ header {
   gap: 10px;
 }
 
-.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
-
-.brand-mark { display: grid; place-items: center; color: var(--accent); }
+.brand { display: flex; align-items: center; margin-right: auto; }
 
 h1 { font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
 

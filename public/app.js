@@ -669,7 +669,7 @@ async function downloadAllZip() {
 // ── Add files to the queue ────────────────────────────────────────────────────
 function addFiles(files) {
   const list = document.getElementById('image-list');
-  const supported = new Set(['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif', '.pdf']);
+  const supported = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif', '.heic', '.heif', '.pdf']);
 
   Array.from(files).forEach(file => {
     const ext = (file.name.match(/\.[^.]+$/) || [''])[0].toLowerCase();

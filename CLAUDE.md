@@ -1,4 +1,6 @@
-# Image Optimizer
+# Press
+
+The tool is called Press (renamed 2026-10-27). The repo, the folder and the GitHub remote stay `image-optimizer` on purpose: coworkers' clones and the self-updater key off that name.
 
 A local image optimization factory with both a CLI and a web UI. Drop JPG, PNG, WebP, HEIC or PDF files in, get compressed, renamed, and properly formatted files out. Coworkers clone this repo and `git pull` updates, so keep `README.md` accurate for a non-developer.
 
@@ -39,6 +41,7 @@ process.js         ← CLI manual batch processor
 - **PNG with transparency**: keep as PNG, compress at level 9 lossless
 - **PNG without transparency**: auto-convert to JPG (treated as a photo) — this is the "Auto" format mode
 - **WebP output**: available as output format from web UI; uses same quality setting as JPG
+- **AVIF**: sharp reads it directly (web and CLI); Auto converts to JPG, or PNG if transparency is used (`CONVERT_EXTS` in `lib/processor.js`, HEIC takes the same path in the CLI)
 - **HEIC/HEIF**: `server.js` converts to JPG on upload (web UI); sharp reads HEIC directly in the CLI. Savings are measured against the uploaded HEIC size (`originalBytes`), not the converted JPG
 - **PDF**: Ghostscript (`gs`) with a preset picked from quality (`pdfPresetForQuality`); can grow small PDFs
 - **Sizes**: decimal units (1 KB = 1000 B) to match Finder, in both `formatBytes` copies (`lib/processor.js`, `public/app.js`)
