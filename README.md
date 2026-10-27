@@ -6,22 +6,40 @@ Compress, resize, convert and rename images (and PDFs) for the web. It runs on y
 
 ## Setup (once)
 
-You need:
-- [Node.js](https://nodejs.org) 18 or newer
-- [Homebrew](https://brew.sh), for the two installs below
-- Access to the Nimble-Digital GitHub org (the repo is private)
+This takes about ten minutes and you only do it once. Everything happens in **Terminal**, the app that lets you type commands to your Mac. Open it from Spotlight: press `Cmd+Space`, type `Terminal`, press Enter. A white or black window appears with a blinking cursor. That's where you paste the commands below, one block at a time, pressing Enter after each.
 
-**1. Log in to GitHub from Terminal.** The repo is private, so git needs your login, and GitHub no longer accepts your password there. This saves your login once, for the download and for every automatic update after it:
+Two things to know before you start:
+- Commands run in a folder, like Finder has a current folder. Terminal starts in your home folder (the one with Desktop, Documents and Downloads in it).
+- If a popup asks to install "command line developer tools", click **Install** and wait for it to finish, then run the command again.
+
+**1. Install Homebrew.** It installs the other tools. Paste this and press Enter; it asks for your Mac password (nothing shows while you type it, that's normal) and takes a few minutes:
 
 ```bash
-brew install gh
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+When it finishes it prints a **Next steps** section with two commands starting `echo` and `eval`. Copy and run those too, or Terminal won't find `brew`.
+
+**2. Install Node, the GitHub tool and Ghostscript:**
+
+```bash
+brew install node gh ghostscript
+```
+
+(Node runs the app, `gh` logs you in to GitHub, Ghostscript handles PDFs.)
+
+**3. Get access to the code.** The repo is private, so you need a GitHub account that is in the Nimble-Digital organisation. If you don't have one, make a free account at https://github.com, then ask Danny to add you. Wait for the invite email and accept it before the next step.
+
+**4. Log in to GitHub from Terminal.** This saves your login once, for the download and for every automatic update after it:
+
+```bash
 gh auth login --git-protocol https
 gh auth setup-git
 ```
 
-`gh auth login` asks a few questions: pick GitHub.com, then log in with a web browser.
+`gh auth login` asks a few questions. Answer: **GitHub.com**, **Yes** to authenticate Git, **Login with a web browser**. It shows a one-time code; press Enter, paste the code into the browser page that opens, and approve.
 
-**2. Download and install:**
+**5. Download the app:**
 
 ```bash
 git clone https://github.com/Nimble-Digital/image-optimizer.git
@@ -29,19 +47,18 @@ cd image-optimizer
 npm install
 ```
 
-**3. PDF support (optional).** PDF optimization needs Ghostscript. Skip this if you only do images:
-
-```bash
-brew install ghostscript
-```
+This makes an `image-optimizer` folder in your home folder and installs what it needs. You can see it in Finder next to Desktop and Documents.
 
 ## Use it
 
+Every time you want to use it, open Terminal and run:
+
 ```bash
+cd image-optimizer
 npm start
 ```
 
-Then open **http://localhost:8080**. Leave the terminal window open while you use it; `Ctrl+C` stops it.
+Then open **http://localhost:8080** in your browser. Leave the Terminal window open while you use the app. To stop it, click the Terminal window and press `Control+C` (Control, not Command).
 
 1. **Drop files in.** JPG, PNG, WebP, AVIF, HEIC (iPhone photos) or PDF, as many as you like. Drop them anywhere on the page, or paste a screenshot with Cmd+V.
 2. **Optimize** one card, or **Optimize All**. Each card shows the exact size it will be before you do, and it updates live as you change settings.
@@ -71,9 +88,9 @@ Settings, Optimize All and a short **Handy extras** list sit in a sidebar that f
 
 ## Getting updates
 
-Updates install themselves: every time you start the app with `npm start`, it checks GitHub first and pulls the latest version. When a new version comes out while the app is open, a bar at the top says so. Press `Ctrl+C` in Terminal and run `npm start` again to get it. The version badge in the header lists what changed.
+Updates install themselves: every time you start the app with `npm start`, it checks GitHub first and pulls the latest version. When a new version comes out while the app is open, a bar at the top says so. Press `Control+C` in Terminal and run `npm start` again to get it. The version badge in the header lists what changed.
 
-If the update can't run (offline, no GitHub access, or you've edited files yourself), it says so and starts the version you have. To update by hand:
+If the update can't run (offline, no GitHub access, or you've edited files yourself), it says so and starts the version you have. To update by hand, in Terminal:
 
 ```bash
 cd image-optimizer
@@ -92,9 +109,12 @@ All three are ignored by git, so nothing you process is ever committed.
 
 ## If something's off
 
-- **`Error: listen EADDRINUSE: address already in use :::8080`** when starting: the app is already running in another Terminal window. Use that one, or press `Ctrl+C` there first. To run a second copy anyway: `PORT=8081 npm start`.
+- **`Error: listen EADDRINUSE: address already in use :::8080`** when starting: the app is already running in another Terminal window. Use that one, or press `Control+C` there first. To run a second copy anyway: `PORT=8081 npm start`.
 - **"Checking for updates... skipped"**: the message after it says why. Usually you're offline, your GitHub login isn't saved (redo step 1 of Setup), or you've edited the app's files yourself. The app still starts on the version you have.
-- **The page won't load**: check the Terminal window is still open and shows `Press → http://localhost:8080`. If it closed, run `npm start` again from the `image-optimizer` folder.
+- **The page won't load**: check the Terminal window is still open and shows `Press → http://localhost:8080`. If it closed, open Terminal and run `cd image-optimizer` then `npm start` again.
+- **`command not found: brew`** or **`npm`**: Terminal can't see Homebrew. Rerun the two **Next steps** commands Homebrew printed at the end of its install (or close Terminal and open it again), then try again.
+- **`cd: no such file or directory: image-optimizer`**: Terminal isn't in your home folder. Run `cd ~` first, then `cd image-optimizer`.
+- **Asked for a GitHub username and password** when starting: your login isn't saved. Run `gh auth setup-git` and try again.
 - **A transparent logo came out with a black background**: you picked JPG, which can't store transparency. Switch Format back to Auto, which keeps it as PNG or WebP.
 
 ---
@@ -118,7 +138,7 @@ New file: hero-banner-raw.png
      1.23 MB  →  890.4 KB  (saved 339.6 KB (27.6%))
 ```
 
-Files dropped at the same time are queued, so prompts never overlap. `Ctrl+C` stops it.
+Files dropped at the same time are queued, so prompts never overlap. `Control+C` stops it.
 
 **Batch mode** loops through everything already in the inbox:
 
