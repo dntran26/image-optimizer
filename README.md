@@ -102,7 +102,7 @@ All three are ignored by git, so nothing you process is ever committed.
 ## If something's off
 
 - **`Error: listen EADDRINUSE: address already in use :::8080`** when starting: the app is already running in another Terminal window. Use that one, or press `Control+C` there first. To run a second copy anyway: `PORT=8081 npm start`.
-- **"Checking for updates... skipped"**: the message after it says why. Usually you're offline, your GitHub login isn't saved (redo step 1 of Setup), or you've edited the app's files yourself. The app still starts on the version you have.
+- **"Checking for updates... skipped"**: the message after it says why. Usually you're offline, your GitHub login isn't saved (redo step 3 of Setup), or you've edited the app's files yourself. The app still starts on the version you have.
 - **The page won't load**: check the Terminal window is still open and shows `Press → http://localhost:8080`. If it closed, open Terminal and run `cd image-optimizer` then `npm start` again.
 - **`command not found: brew`** or **`npm`**: Terminal can't see Homebrew. Rerun the two **Next steps** commands Homebrew printed at the end of its install (or close Terminal and open it again), then try again.
 - **`cd: no such file or directory: image-optimizer`**: Terminal isn't in your home folder. Run `cd ~` first, then `cd image-optimizer`.
